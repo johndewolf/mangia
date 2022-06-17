@@ -14,6 +14,14 @@ export async function getUserByEmail(email) {
   return prisma.user.findUnique({ where: { email } });
 }
 
+export function getUsers() {
+  return prisma.user.findMany({
+    select: { id: true, username: true },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
+
 export async function createUser(email, password) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
