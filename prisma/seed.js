@@ -41,6 +41,21 @@ async function seed() {
     },
   });
 
+  const recipe = await prisma.recipe.create({
+    data: {
+      title: "My recipe",
+      ingredients: "Ingredients will go here",
+      userId: user.id,
+    },
+  });
+
+  await prisma.step.create({
+    data:{
+        body: 'this is an important step',
+        recipeId: recipe.id
+    }
+  })
+
   console.log(`Database has been seeded. 🌱`);
 }
 
