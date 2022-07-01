@@ -11,8 +11,6 @@ import {
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 
-import Sidebar from './components/Sidebar'
-
 export const links = () => {
   return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
 };
@@ -37,9 +35,7 @@ export default function App() {
         <Links />
       </head>
       <body className="flex">
-        <Sidebar>
-          <Outlet />
-        </Sidebar>
+        <Outlet />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

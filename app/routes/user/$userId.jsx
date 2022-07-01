@@ -2,6 +2,7 @@ import { json } from "@remix-run/node";
 import {  useCatch, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { getUserByUsername } from '~/models/user.server.js'
+import Layout from "../../components/Layout";
 
 export const loader = async ({ request, params }) => {
   invariant(params.userId, "userId not found");
@@ -18,9 +19,9 @@ export default function NoteDetailsPage() {
   const data = useLoaderData();
 
   return (
-    <div>
+    <Layout>
       <h3 className="text-2xl font-bold">{data.user.username}</h3>
-    </div>
+    </Layout>
   );
 }
 

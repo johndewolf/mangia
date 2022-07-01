@@ -21,7 +21,6 @@ export function getUsers() {
   });
 }
 
-
 export async function createUser(email, password) {
   const hashedPassword = await bcrypt.hash(password, 10);
 

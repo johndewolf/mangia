@@ -1,9 +1,7 @@
 import { json } from "@remix-run/node";
-import { Link, useCatch, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { getUsers } from '~/models/user.server.js'
-
-
-
+import Layout from "../../components/Layout";
 export const loader = async() => {
 
   const users = await getUsers();
@@ -15,7 +13,7 @@ export default function UserIndexRoute() {
 
   const { users } = useLoaderData();
   return (
-    <div className="min-h-screen">
+    <Layout>
       <h3 className="text-2xl font-bold">User Index Page</h3>
       <ul>
       { users.map((user) => {
@@ -24,6 +22,6 @@ export default function UserIndexRoute() {
         )
       }) }
       </ul>
-    </div>
+    </Layout>
   );
 }
