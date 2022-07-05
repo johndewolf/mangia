@@ -15,11 +15,10 @@ export const loader = async ({ request, params }) => {
 
 export default function RecipeDetailsPage() {
   const {recipe} = useLoaderData();
-  console.log(recipe)
-
+  
   return (
     <Layout>
-      <h3 className="text-2xl font-bold">{recipe.title} &mdash; <Link to={`/user/${recipe.user.username}`}>{recipe.user.username}</Link></h3>
+      <h1 className="text-2xl font-bold">{recipe.title} &mdash; <Link to={`/user/${recipe.user.username}`}>{recipe.user.username}</Link></h1>
       <hr className="my-4" />
       <p>{recipe.ingredients}</p>
       <hr className="my-4" />

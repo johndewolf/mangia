@@ -21,3 +21,21 @@ export function getRecipeByUser(userId) {
     where: { userId },
   });
 }
+
+
+export function createRecipe({  title, ingredients, userId, steps }) {
+  return prisma.recipe.create({
+    data: {
+      title,
+      ingredients,
+      steps: {
+        create: steps
+      },
+      user: {
+        connect: {
+          id: userId,
+        },
+      },
+    },
+  });
+}

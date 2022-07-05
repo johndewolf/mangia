@@ -15,7 +15,7 @@ export default function RecipeIndexRoute() {
   return (
     <Layout>
 
-      <h3 className="text-2xl font-bold">Recipes Index Page</h3>
+      <h1 className="text-2xl font-bold">Recipes Index Page</h1>
       <ul className="list-disc ml-8">
         {recipes.map((recipe) => (<li className="pl-4" key={recipe.id}><Link className="text-blue-600 underline" to={recipe.id}>{recipe.title}</Link></li>))}
       </ul>

@@ -4,7 +4,7 @@ const Layout = ({children}) => {
   return (
   <>
     <Sidebar />
-    <main className="grow">
+    <main className="grow p-8">
       {children}
     </main>
   </>
