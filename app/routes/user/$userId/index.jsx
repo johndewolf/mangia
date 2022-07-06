@@ -13,22 +13,20 @@ export const loader = async ({ request, params }) => {
   return json({ recipes, user });
 };
 
-export const action = async ({ request, params }) => {
-  console.log('hit action')
-  const userId = await requireUserId(request);
-  const formData = await request.formData();
-  const recipeId = formData.get("recipeId");
-  console.log(recipeId)
-  await deleteRecipe({ userId, id: recipeId });
-  return json({message: `Recipe Deleted`, status: 'success'})
-};
+// export const action = async ({ request, params }) => {
+//   const userId = await requireUserId(request);
+//   const formData = await request.formData();
+//   const recipeId = formData.get("recipeId");
+//   console.log(recipeId)
+//   await deleteRecipe({ userId, id: recipeId });
+//   return json({message: `Recipe Deleted`, status: 'success'})
+// };
 
 export default function UserDetailPage() {
   const { recipes, user } = useLoaderData();
-  const actionData = useActionData();
+  // const actionData = useActionData();
   return (
     <Layout>
-      {actionData ? actionData.message : null}
       <h1 className="text-2xl font-bold">Profile Page</h1>
       <div className="max-w-md mt-8">
       <Card>
@@ -44,7 +42,7 @@ export default function UserDetailPage() {
               <li className="hover:bg-blue-100 px-4" key={recipe.id}>
                 <div className="flex items-center">
                   <div className="flex-1">
-                    <Link to={recipe.id} className="block py-2 sm:py-4">{recipe.title}</Link>
+                    <Link to={recipe.slug} className="block py-2 sm:py-4">{recipe.title}</Link>
                   </div>
                   <div className="min-w-0 text-right">
                     {user && 

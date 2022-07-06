@@ -30,6 +30,7 @@ model Recipe {
   id          String   @id @default(cuid())
   title       String
   ingredients String
+  slug        String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

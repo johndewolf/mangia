@@ -1,12 +1,13 @@
 import { json } from "@remix-run/node";
 import invariant from "tiny-invariant";
-import { getRecipe } from "~/models/recipe.server";
+import { getRecipeBySlug } from "~/models/recipe.server";
 import { Link, useLoaderData } from "@remix-run/react";
 import Layout from "~/components/Layout";
 export const loader = async ({ request, params }) => {
-  invariant(params.recipeId, "recipe Id not found");
+  invariant(params.recipeSlug, "recipe slug not found");
 
-  const recipe = await getRecipe({ id: params.recipeId });
+  const recipe = await getRecipeBySlug({ slug: params.recipeSlug });
+
   if (!recipe) {
     throw new Response("Not Found", { status: 404 });
   }

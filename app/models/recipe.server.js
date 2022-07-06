@@ -16,6 +16,18 @@ export function getRecipe(id) {
   });
 }
 
+
+export function getRecipeBySlug(slug) {
+  return prisma.recipe.findFirst({
+    where: slug,
+    include: {
+      steps: true,
+      user: true
+    }
+  });
+}
+
+
 export function getRecipeByUser(userId) {
   return prisma.findFirst.findFirst({
     where: { userId },
@@ -30,7 +42,8 @@ export function getRecipesByUser(username) {
     },
     select: {
       id: true,
-      title: true
+      title: true,
+      slug: true
     }
   });
 }
@@ -41,10 +54,11 @@ export function deleteRecipe({ id, userId }) {
   });
 }
 
-export function createRecipe({  title, ingredients, userId, steps }) {
+export function createRecipe({  title, ingredients, userId, steps, slug }) {
   return prisma.recipe.create({
     data: {
       title,
+      slug,
       ingredients,
       steps: {
         create: steps
@@ -56,4 +70,5 @@ export function createRecipe({  title, ingredients, userId, steps }) {
       },
     },
   });
+
 }

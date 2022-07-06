@@ -44,6 +44,7 @@ async function seed() {
   const recipe = await prisma.recipe.create({
     data: {
       title: "My recipe",
+      slug: "my-recipe",
       ingredients: "Ingredients will go here",
       userId: user.id,
     },

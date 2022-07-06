@@ -2,17 +2,22 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import * as React from "react";
 import Layout from '~/components/Layout'
-import { createRecipe } from "~/models/recipe.server";
-import { requireUserId } from "~/session.server";
+import { createRecipe, getRecipeBySlug } from "~/models/recipe.server";
+import { getUser } from "~/session.server";
+import slugify from "slugify";
 
 export const action = async ({ request }) => {
-  const userId = await requireUserId(request);
+  const user = await getUser(request);
 
   const formData = await request.formData();
   const title = formData.get("title");
   const ingredients = formData.get("ingredients");
   const steps = [];
-
+  let slugifyTitle = slugify(title);
+  const existingRecipe = await getRecipeBySlug({slug: slugifyTitle})
+  if (existingRecipe) {
+    slugifyTitle = slugifyTitle + `-${Date.now()}`
+  }
   for(const pair of formData.entries()) {
     const key = pair[0];
     const value = pair[1];
@@ -21,7 +26,7 @@ export const action = async ({ request }) => {
       steps.push({body: value})
     }
   }
-  console.log('in action: ', steps)
+
   if (typeof title !== "string" || title.length === 0) {
     return json({ errors: { title: "Title is required" } }, { status: 400 });
   }
@@ -30,9 +35,8 @@ export const action = async ({ request }) => {
     return json({ errors: { body: "Ingredients are required" } }, { status: 400 });
   }
 
-  await createRecipe({ title, ingredients, steps, userId });
-  //will redirect to specific recipe after slug for url is added
-  return redirect(`/recipes`);
+  const recipe = await createRecipe({ title, ingredients, steps, userId: user.id, slug: slugifyTitle });
+  return redirect(`/user/${user.username}/${recipe.slug}`);
 };
 
 export default function NewRecipe() {
