@@ -13,20 +13,22 @@ export const loader = async ({ request, params }) => {
   return json({ recipes, user });
 };
 
-// export const action = async ({ request, params }) => {
-//   const userId = await requireUserId(request);
-//   const formData = await request.formData();
-//   const recipeId = formData.get("recipeId");
-//   console.log(recipeId)
-//   await deleteRecipe({ userId, id: recipeId });
-//   return json({message: `Recipe Deleted`, status: 'success'})
-// };
+export const action = async ({ request, params }) => {
+  const userId = await requireUserId(request);
+  const formData = await request.formData();
+  const recipeId = formData.get("recipeId");
+  await deleteRecipe({ userId, id: recipeId });
+  return json({message: `Recipe Deleted`, status: 200})
+};
 
 export default function UserDetailPage() {
   const { recipes, user } = useLoaderData();
-  // const actionData = useActionData();
+  const actionData = useActionData();
   return (
     <Layout>
+      {/* fire toast */}
+      {actionData?.status === 200 && <div>Recipe Deleted</div>}
+
       <h1 className="text-2xl font-bold">Profile Page</h1>
       <div className="max-w-md mt-8">
       <Card>
@@ -59,7 +61,7 @@ export default function UserDetailPage() {
                           </button>
                         </Dropdown.Item>
                         <Dropdown.Item>
-                          <Form method="post">
+                          <Form method="post" replace>
                           <button
                             type="submit"
                             value={recipe.id}
