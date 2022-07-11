@@ -1,8 +1,8 @@
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
+import { Form, useActionData, useSubmit } from "@remix-run/react";
 import * as React from "react";
 import Layout from '~/components/Layout'
-import { createRecipe, getRecipeBySlug } from "~/models/recipe.server";
+import { createRecipe, getRecipeBySlug, getIngredientSuggestion } from "~/models/recipe.server";
 import { getUser } from "~/session.server";
 import slugify from "slugify";
 
@@ -12,7 +12,9 @@ export const action = async ({ request }) => {
   const formData = await request.formData();
   const title = formData.get("title");
   const ingredients = formData.get("ingredients");
+  const isGetSuggestion = formData.get("getSuggestion")
   const steps = [];
+
   let slugifyTitle = slugify(title);
   const existingRecipe = await getRecipeBySlug({slug: slugifyTitle})
   if (existingRecipe) {
@@ -27,20 +29,37 @@ export const action = async ({ request }) => {
     }
   }
 
-  if (typeof title !== "string" || title.length === 0) {
-    return json({ errors: { title: "Title is required" } }, { status: 400 });
+ 
+  if (isGetSuggestion && user) {
+    try {
+      const aiResponse = await(getIngredientSuggestion(ingredients))
+      console.log(aiResponse.data)
+      const firstChoice = aiResponse?.data?.choices[0]?.text;
+      return json({suggestion: firstChoice})
+    } catch (e) {
+      console.log(e)
+      return (json({errors: 'Problem getting suggestion'}))
+    }
+    
+    
   }
+  else {
+    if (typeof title !== "string" || title.length === 0) {
+      return json({ errors: { title: "Title is required" } }, { status: 400 });
+    }
 
-  if (typeof ingredients !== "string" || ingredients.length === 0) {
-    return json({ errors: { body: "Ingredients are required" } }, { status: 400 });
+    if (typeof ingredients !== "string" || ingredients.length === 0) {
+      return json({ errors: { body: "Ingredients are required" } }, { status: 400 });
+    }
+    const recipe = await createRecipe({ title, ingredients, steps, userId: user.id, slug: slugifyTitle });
+    return redirect(`/user/${user.username}/${recipe.slug}`);
   }
-
-  const recipe = await createRecipe({ title, ingredients, steps, userId: user.id, slug: slugifyTitle });
-  return redirect(`/user/${user.username}/${recipe.slug}`);
 };
 
 export default function NewRecipe() {
   const actionData = useActionData();
+  const submit = useSubmit();
+  const formRef = React.useRef(null);
   const titleRef = React.useRef(null);
   const ingredientsRef = React.useRef(null);
   const [ steps, updateSteps ] = React.useState(['']);
@@ -51,17 +70,32 @@ export default function NewRecipe() {
     } else if (actionData?.errors?.ingredients) {
       ingredientsRef.current?.focus();
     }
+
+    if (actionData?.suggestion) {
+      console.log(actionData?.suggestion)
+    }
   }, [actionData]);
   
   const handleStepClick = (e) => {
     e.preventDefault();
     updateSteps([...steps, ''])
+  } 
+
+  const handleIngredientChange = (e) => {
+    const ingredients = e.target.value.split(' ');
+    const lastLetter = e.target.value[e.target.value.length - 1]
+    if (ingredients.length > 3 && lastLetter === ' ') {
+      const formData = new FormData(formRef.current)
+      formData.append('getSuggestion', 'true')
+      submit(formData, {method: "post", action: "/recipes/new"})
+    }
   }
 
   return (
     <Layout>
       <Form
         method="post"
+        ref={formRef}
         style={{
           display: "flex",
           flexDirection: "column",
@@ -81,6 +115,7 @@ export default function NewRecipe() {
               aria-errormessage={
                 actionData?.errors?.title ? "title-error" : undefined
               }
+              
             />
           </label>
           {actionData?.errors?.title && (
@@ -102,6 +137,7 @@ export default function NewRecipe() {
               aria-errormessage={
                 actionData?.errors?.ingredients ? "ingredients-error" : undefined
               }
+              onChange={handleIngredientChange}
             />
           </label>
           {actionData?.errors?.ingredients && (
@@ -109,6 +145,23 @@ export default function NewRecipe() {
               {actionData.errors.ingredients}
             </div>
           )}
+          {actionData?.suggestion &&
+          <label className="flex w-full flex-col gap-1">
+            <span>Suggested Ingredient: </span>
+            <textarea
+              name="ingredients"
+              value={actionData.suggestion}
+              rows={8}
+              readOnly
+              className="w-full flex-1 rounded-md border-2 border-gray-200 py-2 px-3 text-lg leading-6"
+              aria-invalid={actionData?.errors?.ingredients ? true : undefined}
+              aria-errormessage={
+                actionData?.errors?.ingredients ? "ingredients-error" : undefined
+              }
+              onChange={handleIngredientChange}
+            />
+          </label>
+          }
         </div>
         <div>
           <label className="flex w-full flex-col gap-1">

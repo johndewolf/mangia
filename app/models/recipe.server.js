@@ -1,4 +1,18 @@
 import { prisma } from "~/db.server";
+import axios from "axios";
+const { Configuration, OpenAIApi } = require("openai");
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+const instance = axios.create({
+  baseURL: 'https://api.openai.com/v1',
+  timeout: 5000,
+  headers: {
+    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+    'Content-Type': 'application/json'
+  }
+});
 
 export function getRecipes() {
   return prisma.recipe.findMany({
@@ -70,5 +84,21 @@ export function createRecipe({  title, ingredients, userId, steps, slug }) {
       },
     },
   });
+}
 
+export function getIngredientSuggestion(ingredients) {
+  // return openai.createEdit(
+  //   "text-davinci-edit-001", {
+  //     instruction: "What is the next ingredient?",
+  //     input: "cheese better garlic"
+  //     timeout
+  //   }
+  // );
+
+  return instance.post('/edits',
+    {
+      model: "text-davinci-edit-001",
+      instruction: "What is the next ingredient?",
+      input: ingredients
+    })
 }
