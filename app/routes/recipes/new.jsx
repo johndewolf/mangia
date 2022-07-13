@@ -33,7 +33,6 @@ export const action = async ({ request }) => {
   if (isGetSuggestion && user) {
     try {
       const aiResponse = await(getIngredientSuggestion(ingredients))
-      console.log(aiResponse.data)
       const firstChoice = aiResponse?.data?.choices[0]?.text;
       return json({suggestion: firstChoice})
     } catch (e) {
@@ -158,7 +157,6 @@ export default function NewRecipe() {
               aria-errormessage={
                 actionData?.errors?.ingredients ? "ingredients-error" : undefined
               }
-              onChange={handleIngredientChange}
             />
           </label>
           }
