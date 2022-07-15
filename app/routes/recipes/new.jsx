@@ -5,8 +5,11 @@ import Layout from '~/components/Layout'
 import { createRecipe, getRecipeBySlug } from "~/models/recipe.server";
 import { getUser } from "~/session.server";
 import slugify from "slugify";
-import { TextInput } from "flowbite-react"
+import { HiX, HiPlus } from 'react-icons/hi'
 import { v4 as uuidv4 } from "uuid";
+import { Card } from 'flowbite-react'
+
+const addBtnClasses = "rounded border-none flex items-center gap-1 py-2 px-4 text-blue-500 hover:text-white hover:bg-blue-600"
 
 export const action = async ({ request }) => {
   const user = await getUser(request);
@@ -39,10 +42,9 @@ export const action = async ({ request }) => {
   if (typeof title !== "string" || title.length === 0) {
     return json({ errors: { title: "Title is required" } }, { status: 400 });
   }
-  console.log(Object.values(ingredients))
-  return json({a: 1})
-  // const recipe = await createRecipe({ title, ingredients: Object.values(ingredients), steps, userId: user.id, slug: slugifyTitle });
-  // return redirect(`/user/${user.username}/${recipe.slug}`);
+
+  const recipe = await createRecipe({ title, ingredients: Object.values(ingredients), steps, userId: user.id, slug: slugifyTitle });
+  return redirect(`/user/${user.username}/${recipe.slug}`);
 };
 
 export default function NewRecipe() {
@@ -85,111 +87,114 @@ export default function NewRecipe() {
 
   return (
     <Layout>
-      <Form
-        method="post"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-          width: "100%",
-          maxWidth: '40rem'
-        }}
-      >
-        <div>
-          <label className="flex w-full flex-col gap-1">
-            <span>Title: </span>
-            <input
-              ref={titleRef}
-              name="title"
-              className="flex-1 rounded-md border-2 border-gray-200 px-3 text-lg leading-loose"
-              aria-invalid={actionData?.errors?.title ? true : undefined}
-              aria-errormessage={
-                actionData?.errors?.title ? "title-error" : undefined
-              }
-            />
-          </label>
-          {actionData?.errors?.title && (
-            <div className="pt-1 text-red-700" id="title-error">
-              {actionData.errors.title}
+      <div style={{maxWidth: '48rem'}}>
+        <Card>
+          <h1 className="text-xl text-bold">Create Your Recipe</h1>
+          <hr />
+          <Form
+            method="post"
+          >
+            <div>
+              <label className="flex w-full flex-col gap-1">
+                <span>Title: </span>
+                <input
+                  ref={titleRef}
+                  name="title"
+                  className="flex-1 rounded-md border-2 border-gray-200 px-3 text-lg leading-loose"
+                  aria-invalid={actionData?.errors?.title ? true : undefined}
+                  aria-errormessage={
+                    actionData?.errors?.title ? "title-error" : undefined
+                  }
+                />
+              </label>
+              {actionData?.errors?.title && (
+                <div className="pt-1 text-red-700" id="title-error">
+                  {actionData.errors.title}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div>
-          <fieldset>
-            <legend>Ingredients</legend>
-            
-            {ingredients.map((ingr) => (
-              <div className="flex" key={ingr.key}>
-                <input
-                  type="number"
-                  aria-label="ingredient quantity"
-                  placeholder="quantity"
-                  name={`ingredient-quantity-${ingr.key}`}
-                />
-                <input
-                  type="text"
-                  aria-label="ingredient metric"
-                  placeholder="metric"
-                  name={`ingredient-metric-${ingr.key}`}
-                />
-                <input
-                  type="text"
-                  aria-label="ingredient body"
-                  placeholder="ingredient"
-                  name={`ingredient-body-${ingr.key}`}
-                />
-                <button
-                type="button"
-                className="secondary"
-                onClick={() => handleRemoveIngredient(ingr.key)}
+            <div className="mt-8">
+              <fieldset>
+                <legend>Ingredients:</legend>
+                
+                {ingredients.map((ingr) => (
+                  <div className="flex my-4" key={ingr.key}>
+                    <input
+                      type="number"
+                      aria-label="ingredient quantity"
+                      placeholder="quantity"
+                      name={`ingredient-quantity-${ingr.key}`}
+                      style={{maxWidth: '7rem'}}
+                      className="rounded-md border-2 border-gray-200 py-2 px-3"
+                    />
+                    <input
+                      type="text"
+                      aria-label="ingredient metric"
+                      placeholder="metric"
+                      name={`ingredient-metric-${ingr.key}`}
+                      className="rounded-md border-2 border-gray-200 py-2 px-3 ml-4 mr-4"
+                    />
+                    <input
+                      type="text"
+                      aria-label="ingredient body"
+                      placeholder="ingredient"
+                      className="rounded-md flex-1 border-2 border-gray-200 py-2 px-3"
+                      name={`ingredient-body-${ingr.key}`}
+                    />
+                    <button
+                    type="button"
+                    className="p-1 border rounded-full self-center ml-1"
+                    onClick={() => handleRemoveIngredient(ingr.key)}
+                    >
+                      <HiX color="red" />
+                    </button>
+                  </div>
+                  ))}
+                </fieldset>
+              <button type="button" onClick={() => handleAddIngredient()} className={addBtnClasses}><HiPlus /> Add ingredient</button>
+            </div>
+            <div className="mt-8" >
+              <fieldset>
+                <legend>Steps: </legend>
+                
+                {steps.map((step) => (
+                  <div className="my-4 gap-1 flex relative" key={`step-${step}`}>
+                  <textarea
+                    name={`step-${step}`}
+                    rows={8}
+                    className=" w-full flex-1 rounded-md border-2 border-gray-200 py-2 px-3"
+                  />
+                  <button
+                  type="button"
+                  className="p-1 border rounded-full self-start"
+                  disabled={steps.length < 2}
+                  onClick={() => handleRemoveStep(step)}
                 >
-                  X
+                  <HiX className="" color="red" />
                 </button>
-              </div>
-              ))}
-            </fieldset>
-          <button type="button" onClick={() => handleAddIngredient()}>Add ingredient</button>
-        </div>
-        <div>
-          <label className="flex gap-1">
-            <span>Steps: </span>
-            
-            {steps.map((step) => (
-              <div className="flex" key={`step-${step}`}>
-              <textarea
-                name={`step-${step}`}
-                rows={8}
-                className="w-full flex-1 rounded-md border-2 border-gray-200 py-2 px-3 text-lg leading-6"
-              />
-              <button
-              type="button"
-              className="secondary"
-              onClick={() => handleRemoveStep(step)}
-            >
-              X
-            </button>
+                </div>
+                ))}
+                <button
+                  onClick={handleAddStep}
+                  className={addBtnClasses}
+                >
+                  <HiPlus /> Add Step
+                </button>
+              </fieldset>
             </div>
-            ))}
-            
-          </label>
-        </div>
 
-        <div className="text-right">
-          <button
-            onClick={handleAddStep}
-            className="rounded border-2 border-blue-500 py-2 px-4 text-blue-500 hover:bg-blue-600"
-          >
-            Add Step
-          </button>
-          <button
-            type="submit"
-            className="rounded ml-4 border-2 border-blue-500 bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          >
-            Save
-          </button>
-        </div>
-      </Form>
+            <div className="text-right">
+              <button
+                type="submit"
+                className="rounded ml-4 border-2 border-blue-500 bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+              >
+                Create Recipe
+              </button>
+            </div>
+          </Form>
+        </Card>
+      </div>
     </Layout>
   );
 }
