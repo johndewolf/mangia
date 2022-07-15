@@ -11,6 +11,7 @@ export function getRecipe(id) {
     where: id,
     include: {
       steps: true,
+      ingredients: true,
       user: true
     }
   });
@@ -21,6 +22,7 @@ export function getRecipeBySlug(slug) {
   return prisma.recipe.findFirst({
     where: slug,
     include: {
+      ingredients: true,
       steps: true,
       user: true
     }
@@ -59,7 +61,9 @@ export function createRecipe({  title, ingredients, userId, steps, slug }) {
     data: {
       title,
       slug,
-      ingredients,
+      ingredients: {
+        create: ingredients
+      },
       steps: {
         create: steps
       },
