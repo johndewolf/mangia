@@ -3,7 +3,7 @@ import { Form, useActionData } from "@remix-run/react";
 import * as React from "react";
 import Layout from '~/components/Layout'
 import { createRecipe, getRecipeBySlug } from "~/models/recipe.server";
-import { getUser } from "~/session.server";
+import { getUser, sessionStorage, getSession } from "~/session.server";
 import slugify from "slugify";
 import { HiX, HiPlus } from 'react-icons/hi'
 import { v4 as uuidv4 } from "uuid";
@@ -43,17 +43,28 @@ export const action = async ({ request }) => {
     return json({ errors: { title: "Title is required" } }, { status: 400 });
   }
 
+  
   const recipe = await createRecipe({ title, ingredients: Object.values(ingredients), steps, userId: user.id, slug: slugifyTitle });
-  return redirect(`/user/${user.username}/${recipe.slug}`);
+  
+  const session = await getSession(request)
+  session.flash(
+    "globalMessage",
+    `Recipe "${recipe.title}" successfully created`
+  );
+  return redirect(`/user/${user.username}/${recipe.slug}`,
+    {headers: {
+      "Set-Cookie": await sessionStorage.commitSession(session),
+    } 
+  });
 };
 
 export default function NewRecipe() {
   const actionData = useActionData();
   const titleRef = React.useRef(null);
-  const ingredientsRef = React.useRef(null);
   const [ steps, updateSteps ] = React.useState(['step-1']);
-  const [ ingredients, updateIngredients ] = React.useState([{key: 0, metric: '', quantity: '', body: ''}]);
 
+  const [ ingredients, updateIngredients ] = React.useState([{key: 0, metric: '', quantity: '', body: ''}]);
+  const ingredientsRef = React.useRef(ingredients.map(() => React.createRef()))
   React.useEffect(() => {
     if (actionData?.errors?.title) {
       titleRef.current?.focus();
@@ -117,7 +128,16 @@ export default function NewRecipe() {
             <div className="mt-8">
               <fieldset>
                 <legend>Ingredients:</legend>
-                
+                <datalist id="browsers">
+  <option value="cups"/>
+  <option value="ounces"/>
+  <option value="grams"/>
+  <option value="tablespoons"/>
+  <option value="teaspoons"/>
+  <option value="pinch"/>
+  <option value="handful"/>
+  <option value="handful"/>
+</datalist>
                 {ingredients.map((ingr) => (
                   <div className="flex my-4" key={ingr.key}>
                     <input
@@ -125,13 +145,15 @@ export default function NewRecipe() {
                       aria-label="ingredient quantity"
                       placeholder="quantity"
                       name={`ingredient-quantity-${ingr.key}`}
+                      ref={ingredientsRef.current[ingr.key]}
                       style={{maxWidth: '7rem'}}
                       className="rounded-md border-2 border-gray-200 py-2 px-3"
                     />
                     <input
-                      type="text"
+                      list="browsers"
                       aria-label="ingredient metric"
-                      placeholder="metric"
+                      placeholder="unit"
+
                       name={`ingredient-metric-${ingr.key}`}
                       className="rounded-md border-2 border-gray-200 py-2 px-3 ml-4 mr-4"
                     />
