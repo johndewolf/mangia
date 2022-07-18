@@ -4,7 +4,7 @@ import { getRecipesByUser, deleteRecipe } from '~/models/recipe.server.js'
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useFetcher } from "@remix-run/react";
 import { getUser, requireUserId, getSession, sessionStorage } from "~/session.server.js"
-import { Card, Dropdown, Toast } from "flowbite-react";
+import { Card, Dropdown } from "flowbite-react";
 
 
 export const loader = async ({ request, params }) => {
@@ -39,23 +39,31 @@ export default function UserDetailPage() {
   return (
     <Layout message={message}>
       <h1 className="text-2xl font-bold">Profile Page</h1>
-      <div className="max-w-md mt-8">
-      <Card>
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
-            Recipes
-          </h3>
-          </div>
-          <div className="flow-root">
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            { recipes.map((recipe) => {
-            return (
-              <RecipeItem recipe={recipe} user={user} key={recipe.id} />
-            )
-            })}
-          </ul>
+      <div className="flex mt-8">
+        <div className="max-w-md">
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
+                Recipes
+              </h3>
+              </div>
+              <div className="flow-root">
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                { recipes.map(recipe => (
+                  <RecipeItem recipe={recipe} user={user} key={recipe.id} />
+                ))}
+              </ul>
+            </div>
+            { user &&
+              <Link to="/recipes/new" className="mt-4 self-start rounded border-2 border-blue-500 bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400">
+              Create a Recipe
+              </Link>
+            }
+          </Card>
+        </div> 
+        <div>
+
         </div>
-      </Card>
       </div>
     </Layout>
   );
