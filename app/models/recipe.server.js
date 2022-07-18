@@ -50,6 +50,30 @@ export function getRecipesByUser(username) {
   });
 }
 
+export function getRecipeCheckInsByUser({recipeId, userId}) {
+  return prisma.checkIn.findMany({
+    where: { userId, recipeId },
+    orderBy: {
+      createdAt: 'desc'
+    },
+    select: {
+      id: true,
+      createdAt: true
+    }
+  });
+}
+
+
+export function createRecipeCheckInByUser({recipeId, userId}) {
+  return prisma.checkIn.create({
+    data: {
+      recipeId,
+      userId
+    }
+  });
+}
+
+
 export function deleteRecipe({ id, userId }) {
   return prisma.recipe.deleteMany({
     where: { id, userId },

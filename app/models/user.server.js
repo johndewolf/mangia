@@ -65,3 +65,28 @@ export async function verifyLogin(email, password) {
 
   return userWithoutPassword;
 }
+
+export function getUserCheckIns({userId}) {
+  return prisma.checkIn.findMany({
+    where: { userId},
+    orderBy: {
+      createdAt: 'desc'
+    },
+    take: 5,
+    select: {
+      id: true,
+      recipe: {
+        select: {
+          title: true,
+          slug: true
+        }
+      },
+      user: {
+        select: {
+          username: true
+        }
+      },
+      createdAt: true
+    }
+  });
+}

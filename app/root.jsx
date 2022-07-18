@@ -28,7 +28,6 @@ export const loader = async ({ request }) => {
 };
 
 export default function App() {
-  console.log('render app')
   return (
     <html lang="en" className="h-full">
       <head>

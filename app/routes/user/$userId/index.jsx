@@ -1,11 +1,12 @@
 import Layout from "~/components/Layout";
 import invariant from "tiny-invariant";
 import { getRecipesByUser, deleteRecipe } from '~/models/recipe.server.js'
+import { getUserCheckIns } from '~/models/user.server.js'
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useFetcher } from "@remix-run/react";
 import { getUser, requireUserId, getSession, sessionStorage } from "~/session.server.js"
-import { Card, Dropdown } from "flowbite-react";
-
+import { Card, Dropdown, Table } from "flowbite-react";
+import { formatDate } from "~/utils"
 
 export const loader = async ({ request, params }) => {
   invariant(params.userId, "userId not found");
@@ -13,7 +14,8 @@ export const loader = async ({ request, params }) => {
   const session = await getSession(request);
   const message = session.get("globalMessage") || null;
   const recipes = await getRecipesByUser({ username: params.userId });
-  return json({ recipes, user, message }, {headers: {
+  const checkIns = await getUserCheckIns({userId: user.id})
+  return json({ recipes, user, message, checkIns }, {headers: {
     "Set-Cookie": await sessionStorage.commitSession(session),
   }});
 };
@@ -33,12 +35,12 @@ export const action = async ({ request }) => {
   }})
 };
 
+
 export default function UserDetailPage() {
-  const { recipes, user, message } = useLoaderData();
-  
+  const { recipes, user, message, checkIns } = useLoaderData();
   return (
     <Layout message={message}>
-      <h1 className="text-2xl font-bold">Profile Page</h1>
+      <h1 className="text-2xl font-bold">Profile </h1>
       <div className="flex mt-8">
         <div className="max-w-md">
           <Card>
@@ -60,11 +62,37 @@ export default function UserDetailPage() {
               </Link>
             }
           </Card>
-        </div> 
-        <div>
-
         </div>
       </div>
+      <div className="max-w-xl mt-12">
+        <h3 className="text-xl mb-4 font-bold leading-none text-gray-900 dark:text-white">
+          Recent Check Ins
+        </h3>
+        <Table>
+          <Table.Head>
+            <Table.HeadCell>
+              Recipe
+            </Table.HeadCell>
+            <Table.HeadCell>
+              Recipe Creator
+            </Table.HeadCell>
+            <Table.HeadCell>
+              Check In Date
+            </Table.HeadCell>
+          </Table.Head>
+          <Table.Body>
+            {checkIns.map(checkIn => (
+              <Table.Row key={checkIn.id}>
+                <Table.Cell><Link to={`/user/${checkIn.user.username}/${checkIn.recipe.slug}`}>{checkIn.recipe.title}</Link></Table.Cell>
+
+                <Table.Cell><Link to={`/user/${checkIn.user.username}/`}>{checkIn.user.username}</Link></Table.Cell>
+
+                <Table.Cell>{formatDate(checkIn.createdAt)}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </div> 
     </Layout>
   );
 }
