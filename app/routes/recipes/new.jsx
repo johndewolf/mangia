@@ -6,7 +6,6 @@ import { createRecipe, getRecipeBySlug } from "~/models/recipe.server";
 import { getUser, sessionStorage, getSession } from "~/session.server";
 import slugify from "slugify";
 import { HiX, HiPlus } from 'react-icons/hi'
-import { v4 as uuidv4 } from "uuid";
 import { Card } from 'flowbite-react'
 
 const addBtnClasses = "rounded border-none flex items-center gap-1 py-2 px-4 text-blue-500 hover:text-white hover:bg-blue-600"
@@ -30,7 +29,7 @@ export const action = async ({ request }) => {
     if (key.indexOf('step-') > -1 && value !== '') {
       steps.push({body: value})
     }
-    
+
     if (key.indexOf('ingredient-') > -1) {
       const ingredientKeys = key.split('-');
       if (!ingredients[ingredientKeys[2]]) {
@@ -44,7 +43,6 @@ export const action = async ({ request }) => {
     return json({ errors: { title: "Title is required" } }, { status: 400 });
   }
 
-  
   const recipe = await createRecipe({ title, ingredients: Object.values(ingredients), steps, userId: user.id, slug: slugifyTitle });
   
   const session = await getSession(request)
@@ -62,21 +60,32 @@ export const action = async ({ request }) => {
 export default function NewRecipe() {
   const actionData = useActionData();
   const titleRef = React.useRef(null);
-  const [ steps, updateSteps ] = React.useState(['step-1']);
-
+  const ingredientRefs = React.useRef([])
+  const stepRefs = React.useRef([])
+  
+  const [ steps, updateSteps ] = React.useState([0]);
   const [ ingredients, updateIngredients ] = React.useState([{key: 0, metric: '', quantity: '', body: ''}]);
-  const ingredientsRef = React.useRef(ingredients.map(() => React.createRef()))
+
+
   React.useEffect(() => {
     if (actionData?.errors?.title) {
       titleRef.current?.focus();
-    } else if (actionData?.errors?.ingredients) {
-      ingredientsRef.current?.focus();
     }
   }, [actionData]);
+
+  React.useEffect(() => {
+    ingredientRefs.current[ingredients.length - 1].focus()
+  }, [ingredients])
+
+
+  React.useEffect(() => {
+    stepRefs.current[steps.length - 1].focus()
+  }, [steps])
   
   const handleAddStep = (e) => {
     e.preventDefault();
-    updateSteps([...steps, uuidv4()])
+    const nextKey = steps[steps.length - 1] + 1;
+    updateSteps([...steps, nextKey])
   }
 
   const handleRemoveStep = (e) => {
@@ -129,29 +138,29 @@ export default function NewRecipe() {
             <div className="mt-8">
               <fieldset>
                 <legend>Ingredients:</legend>
-                <datalist id="browsers">
-  <option value="cups"/>
-  <option value="ounces"/>
-  <option value="grams"/>
-  <option value="tablespoons"/>
-  <option value="teaspoons"/>
-  <option value="pinch"/>
-  <option value="handful"/>
-  <option value="handful"/>
-</datalist>
-                {ingredients.map((ingr) => (
+                <datalist id="metric-list">
+                  <option value="cups"/>
+                  <option value="ounces"/>
+                  <option value="grams"/>
+                  <option value="tablespoons"/>
+                  <option value="teaspoons"/>
+                  <option value="pinch"/>
+                  <option value="handful"/>
+                  <option value="handful"/>
+                </datalist>
+                {ingredients.map((ingr, index) => (
                   <div className="flex my-4" key={ingr.key}>
                     <input
                       type="number"
                       aria-label="ingredient quantity"
                       placeholder="quantity"
                       name={`ingredient-quantity-${ingr.key}`}
-                      ref={ingredientsRef.current[ingr.key]}
+                      ref={(elem) => (ingredientRefs.current[index] = elem)}
                       style={{maxWidth: '7rem'}}
                       className="rounded-md border-2 border-gray-200 py-2 px-3"
                     />
                     <input
-                      list="browsers"
+                      list="metric-list"
                       aria-label="ingredient metric"
                       placeholder="unit"
 
@@ -167,7 +176,8 @@ export default function NewRecipe() {
                     />
                     <button
                     type="button"
-                    className="p-1 border rounded-full self-center ml-1"
+                    className="p-1 border rounded-full self-center ml-1 border-none"
+                    disabled={ingredients.length < 2}
                     onClick={() => handleRemoveIngredient(ingr.key)}
                     >
                       <HiX color="red" />
@@ -181,16 +191,17 @@ export default function NewRecipe() {
               <fieldset>
                 <legend>Steps: </legend>
                 
-                {steps.map((step) => (
+                {steps.map((step, index) => (
                   <div className="my-4 gap-1 flex relative" key={`step-${step}`}>
                   <textarea
                     name={`step-${step}`}
                     rows={8}
+                    ref={(elem) => (stepRefs.current[index] = elem)}
                     className=" w-full flex-1 rounded-md border-2 border-gray-200 py-2 px-3"
                   />
                   <button
                   type="button"
-                  className="p-1 border rounded-full self-start"
+                  className="p-1 border-none rounded-full self-start"
                   disabled={steps.length < 2}
                   onClick={() => handleRemoveStep(step)}
                 >
