@@ -2,33 +2,42 @@ import Layout from "~/components/Layout";
 import invariant from "tiny-invariant";
 import { getRecipesByUser, deleteRecipe } from '~/models/recipe.server.js'
 import { json } from "@remix-run/node";
-import { Form, Link, useLoaderData, useActionData } from "@remix-run/react";
-import { getUser, requireUserId } from "~/session.server.js"
-import { Card, Dropdown } from "flowbite-react";
+import { Link, useLoaderData, useFetcher } from "@remix-run/react";
+import { getUser, requireUserId, getSession, sessionStorage } from "~/session.server.js"
+import { Card, Dropdown, Toast } from "flowbite-react";
+
 
 export const loader = async ({ request, params }) => {
   invariant(params.userId, "userId not found");
   const user = await getUser(request);
+  const session = await getSession(request);
+  const message = session.get("globalMessage") || null;
   const recipes = await getRecipesByUser({ username: params.userId });
-  return json({ recipes, user });
+  return json({ recipes, user, message }, {headers: {
+    "Set-Cookie": await sessionStorage.commitSession(session),
+  }});
 };
 
-export const action = async ({ request, params }) => {
+export const action = async ({ request }) => {
   const userId = await requireUserId(request);
   const formData = await request.formData();
   const recipeId = formData.get("recipeId");
+  const session = await getSession(request)
+  session.flash(
+    "globalMessage",
+    "Recipe deleted"
+  );
   await deleteRecipe({ userId, id: recipeId });
-  return json({message: `Recipe Deleted`, status: 200})
+  return json({message: `Recipe Deleted`, status: 200}, {headers: {
+    "Set-Cookie": await sessionStorage.commitSession(session),
+  }})
 };
 
 export default function UserDetailPage() {
-  const { recipes, user } = useLoaderData();
-  const actionData = useActionData();
+  const { recipes, user, message } = useLoaderData();
+  
   return (
-    <Layout>
-      {/* fire toast */}
-      {actionData?.status === 200 && <div>Recipe Deleted</div>}
-
+    <Layout message={message}>
       <h1 className="text-2xl font-bold">Profile Page</h1>
       <div className="max-w-md mt-8">
       <Card>
@@ -41,48 +50,57 @@ export default function UserDetailPage() {
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             { recipes.map((recipe) => {
             return (
-              <li className="hover:bg-blue-100 px-4" key={recipe.id}>
-                <div className="flex items-center">
-                  <div className="flex-1">
-                    <Link to={recipe.slug} className="block py-2 sm:py-4">{recipe.title}</Link>
-                  </div>
-                  <div className="min-w-0 text-right">
-                    {user && 
-                      <Dropdown
-                        inline={true}
-                        label=""
-                      >
-                        <Dropdown.Item>
-                          <button
-                            disabled
-                            className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            Edit
-                          </button>
-                        </Dropdown.Item>
-                        <Dropdown.Item>
-                          <Form method="post" replace>
-                          <button
-                            type="submit"
-                            value={recipe.id}
-                            name="recipeId"
-                            className="block py-2 px-4 text-sm text-red-600 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
-                          >
-                            Delete
-                          </button>
-                          </Form>
-                        </Dropdown.Item>
-                      </Dropdown>
-                    }
-                  </div>
-                </div>
-            </li>
+              <RecipeItem recipe={recipe} user={user} key={recipe.id} />
             )
-          }) }
+            })}
           </ul>
         </div>
       </Card>
       </div>
     </Layout>
   );
+}
+
+
+const RecipeItem = ({recipe, user}) => {
+  const fetcher = useFetcher();
+
+  return (
+    <li className="hover:bg-blue-100 px-4" key={recipe.id}>
+      <div className="flex items-center">
+        <div className="flex-1">
+          <Link to={recipe.slug} className="block py-2 sm:py-4">{recipe.title}</Link>
+        </div>
+        <div className="min-w-0 text-right">
+          {user && 
+            <Dropdown
+              inline={true}
+              label=""
+            >
+              <Dropdown.Item>
+                <button
+                  disabled
+                  className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                >
+                  Edit
+                </button>
+              </Dropdown.Item>
+              <Dropdown.Item>
+                <fetcher.Form replace method="post">
+                  <button
+                    type="submit"
+                    value={recipe.id}
+                    name="recipeId"
+                    className="block py-2 px-4 text-sm text-red-600 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                  >
+                    Delete
+                  </button>
+                </fetcher.Form>
+              </Dropdown.Item>
+            </Dropdown>
+          }
+        </div>
+      </div>
+    </li>
+  )
 }

@@ -27,9 +27,10 @@ export const action = async ({ request }) => {
     const key = pair[0];
     const value = pair[1];
 
-    if (key.indexOf('step-') > -1) {
+    if (key.indexOf('step-') > -1 && value !== '') {
       steps.push({body: value})
     }
+    
     if (key.indexOf('ingredient-') > -1) {
       const ingredientKeys = key.split('-');
       if (!ingredients[ingredientKeys[2]]) {
