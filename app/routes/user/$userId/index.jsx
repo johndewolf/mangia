@@ -3,7 +3,7 @@ import invariant from "tiny-invariant";
 import { getRecipesByUser, deleteRecipe } from '~/models/recipe.server.js'
 import { getUserByUsername, getUserCheckIns } from '~/models/user.server.js'
 import { json } from "@remix-run/node";
-import { Link, useLoaderData, useFetcher, useParams } from "@remix-run/react";
+import { Link, useLoaderData, useFetcher, useParams, useCatch } from "@remix-run/react";
 import { getUser, requireUserId, getSession, sessionStorage } from "~/session.server.js"
 import { Card, Dropdown, Table } from "flowbite-react";
 import { formatDate } from "~/utils"
@@ -104,10 +104,8 @@ export default function UserDetailPage() {
             {checkIns.length > 0 ?
             checkIns.map(checkIn => (
               <Table.Row key={checkIn.id}>
-                <Table.Cell><Link to={`/user/${checkIn.user.username}/${checkIn.recipe.slug}`}>{checkIn.recipe.title}</Link></Table.Cell>
-
-                <Table.Cell><Link to={`/user/${checkIn.user.username}/`}>{checkIn.user.username}</Link></Table.Cell>
-
+                <Table.Cell><Link to={`/user/${checkIn.recipe.user.username}/${checkIn.recipe.slug}`}>{checkIn.recipe.title}</Link></Table.Cell>
+                <Table.Cell><Link to={`/user/${checkIn.recipe.user.username}/`}>{checkIn.recipe.user.username}</Link></Table.Cell>
                 <Table.Cell>{formatDate(checkIn.createdAt)}</Table.Cell>
               </Table.Row>
             ))
@@ -163,4 +161,18 @@ const RecipeItem = ({recipe, isUser}) => {
       </div>
     </li>
   )
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+
+  if (caught.status === 404) {
+    return (
+      <Layout>
+        <h1 className="text-2xl font-bold">User not found!</h1>
+      </Layout>
+    );
+  }
+
+  throw new Error(`Unexpected caught response with status: ${caught.status}`);
 }

@@ -8,6 +8,7 @@ describe("smoke tests", () => {
   it("should allow you to register and login", () => {
     const loginForm = {
       email: `${faker.internet.userName()}@example.com`,
+      username: faker.userName(),
       password: faker.internet.password(),
     };
 
@@ -17,6 +18,7 @@ describe("smoke tests", () => {
     cy.findByRole("link", { name: /sign up/i }).click();
 
     cy.findByRole("textbox", { name: /email/i }).type(loginForm.email);
+    cy.findByRole("textbox", { name: /username/i }).type(loginForm.username);
     cy.findByLabelText(/password/i).type(loginForm.password);
     cy.findByRole("button", { name: /create account/i }).click();
 

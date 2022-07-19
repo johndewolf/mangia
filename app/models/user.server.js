@@ -79,7 +79,12 @@ export function getUserCheckIns({userId}) {
       recipe: {
         select: {
           title: true,
-          slug: true
+          slug: true,
+          user: {
+            select: {
+              username: true
+            }
+          }
         }
       },
       user: {
