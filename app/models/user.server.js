@@ -21,12 +21,13 @@ export function getUsers() {
   });
 }
 
-export async function createUser(email, password) {
+export async function createUser(email, password, username) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   return prisma.user.create({
     data: {
       email,
+      username,
       password: {
         create: {
           hash: hashedPassword,
@@ -44,7 +45,7 @@ export async function verifyLogin(email, password) {
   const userWithPassword = await prisma.user.findUnique({
     where: { email },
     include: {
-      password: true,
+      password: true
     },
   });
 
@@ -61,9 +62,9 @@ export async function verifyLogin(email, password) {
     return null;
   }
 
-  const { password: _password, ...userWithoutPassword } = userWithPassword;
+  const { username, password: _password, ...userWithoutPassword } = userWithPassword;
 
-  return userWithoutPassword;
+  return {username, ...userWithoutPassword};
 }
 
 export function getUserCheckIns({userId}) {
