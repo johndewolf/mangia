@@ -1,9 +1,9 @@
 import Layout from "~/components/Layout";
 import invariant from "tiny-invariant";
 import { getRecipesByUser, deleteRecipe } from '~/models/recipe.server.js'
-import { getUserCheckIns } from '~/models/user.server.js'
+import { getUserByUsername, getUserCheckIns } from '~/models/user.server.js'
 import { json } from "@remix-run/node";
-import { Link, useLoaderData, useFetcher } from "@remix-run/react";
+import { Link, useLoaderData, useFetcher, useParams } from "@remix-run/react";
 import { getUser, requireUserId, getSession, sessionStorage } from "~/session.server.js"
 import { Card, Dropdown, Table } from "flowbite-react";
 import { formatDate } from "~/utils"
@@ -11,10 +11,15 @@ import { formatDate } from "~/utils"
 export const loader = async ({ request, params }) => {
   invariant(params.userId, "userId not found");
   const user = await getUser(request);
+  const pageUser = await getUserByUsername(params.userId)
+  if (!pageUser) {
+    throw new Response("Not Found", { status: 404 });
+  }
   const session = await getSession(request);
   const message = session.get("globalMessage") || null;
   const recipes = await getRecipesByUser({ username: params.userId });
-  const checkIns = await getUserCheckIns({userId: user.id})
+  const checkIns = await getUserCheckIns({userId: pageUser.id})
+  
   return json({ recipes, user, message, checkIns }, {headers: {
     "Set-Cookie": await sessionStorage.commitSession(session),
   }});
@@ -35,9 +40,19 @@ export const action = async ({ request }) => {
   }})
 };
 
-
+const noRecipesMessage = (isUser, username) => {
+  if (isUser) {
+    return 'You have no recipes! Create one now!'
+  }
+  else {
+    return `${username} has yet to create a recipe`
+  }
+}
 export default function UserDetailPage() {
   const { recipes, user, message, checkIns } = useLoaderData();
+  const { userId } = useParams();
+  const isUser = userId === user?.username;
+
   return (
     <Layout message={message}>
       <h1 className="text-2xl font-bold">Profile </h1>
@@ -51,12 +66,17 @@ export default function UserDetailPage() {
               </div>
               <div className="flow-root">
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                { recipes.map(recipe => (
-                  <RecipeItem recipe={recipe} user={user} key={recipe.id} />
-                ))}
+                { recipes.length > 0 ?
+                recipes.map(recipe => (
+                  <RecipeItem recipe={recipe} isUser={isUser} key={recipe.id} />
+                ))
+                :
+                noRecipesMessage(isUser, user.username)
+                }
+
               </ul>
             </div>
-            { user &&
+            { isUser &&
               <Link to="/recipes/new" className="mt-4 self-start rounded border-2 border-blue-500 bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400">
               Create a Recipe
               </Link>
@@ -81,7 +101,8 @@ export default function UserDetailPage() {
             </Table.HeadCell>
           </Table.Head>
           <Table.Body>
-            {checkIns.map(checkIn => (
+            {checkIns.length > 0 ?
+            checkIns.map(checkIn => (
               <Table.Row key={checkIn.id}>
                 <Table.Cell><Link to={`/user/${checkIn.user.username}/${checkIn.recipe.slug}`}>{checkIn.recipe.title}</Link></Table.Cell>
 
@@ -89,7 +110,10 @@ export default function UserDetailPage() {
 
                 <Table.Cell>{formatDate(checkIn.createdAt)}</Table.Cell>
               </Table.Row>
-            ))}
+            ))
+            :
+            <Table.Row><Table.Cell colSpan={3}>No checkins!</Table.Cell></Table.Row>
+            }
           </Table.Body>
         </Table>
       </div> 
@@ -98,7 +122,7 @@ export default function UserDetailPage() {
 }
 
 
-const RecipeItem = ({recipe, user}) => {
+const RecipeItem = ({recipe, isUser}) => {
   const fetcher = useFetcher();
 
   return (
@@ -108,7 +132,7 @@ const RecipeItem = ({recipe, user}) => {
           <Link to={recipe.slug} className="block py-2 sm:py-4">{recipe.title}</Link>
         </div>
         <div className="min-w-0 text-right">
-          {user && 
+          {isUser && 
             <Dropdown
               inline={true}
               label=""
