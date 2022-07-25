@@ -45,11 +45,35 @@ async function seed() {
     data: {
       title: "My recipe",
       slug: "my-recipe",
-      ingredients: "Ingredients will go here",
       userId: user.id,
     },
   });
+  await prisma.ingredient.create({
+    data:{
+        quantity: '1',
+        metric:'cup',
+        body: 'balic',
+        recipeId: recipe.id
+    }
+  })
 
+  await prisma.ingredient.create({
+    data:{
+        quantity: '1/4',
+        metric:'cup',
+        body: 'parm',
+        recipeId: recipe.id
+    }
+  })
+
+  await prisma.ingredient.create({
+    data:{
+        quantity: '1/4',
+        metric:'cup',
+        body: 'olive oil',
+        recipeId: recipe.id
+    }
+  })
   await prisma.step.create({
     data:{
         body: 'this is an important step',

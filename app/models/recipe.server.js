@@ -25,6 +25,7 @@ export function getRecipe(id) {
     where: id,
     include: {
       steps: true,
+      ingredients: true,
       user: true
     }
   });
@@ -35,6 +36,7 @@ export function getRecipeBySlug(slug) {
   return prisma.recipe.findFirst({
     where: slug,
     include: {
+      ingredients: true,
       steps: true,
       user: true
     }
@@ -62,6 +64,30 @@ export function getRecipesByUser(username) {
   });
 }
 
+export function getRecipeCheckInsByUser({recipeId, userId}) {
+  return prisma.checkIn.findMany({
+    where: { userId, recipeId },
+    orderBy: {
+      createdAt: 'desc'
+    },
+    select: {
+      id: true,
+      createdAt: true
+    }
+  });
+}
+
+
+export function createRecipeCheckInByUser({recipeId, userId}) {
+  return prisma.checkIn.create({
+    data: {
+      recipeId,
+      userId
+    }
+  });
+}
+
+
 export function deleteRecipe({ id, userId }) {
   return prisma.recipe.deleteMany({
     where: { id, userId },
@@ -73,7 +99,9 @@ export function createRecipe({  title, ingredients, userId, steps, slug }) {
     data: {
       title,
       slug,
-      ingredients,
+      ingredients: {
+        create: ingredients
+      },
       steps: {
         create: steps
       },
@@ -94,7 +122,6 @@ export function getIngredientSuggestion(ingredients) {
   //     timeout
   //   }
   // );
-
   return instance.post('/edits',
     {
       model: "text-davinci-edit-001",
