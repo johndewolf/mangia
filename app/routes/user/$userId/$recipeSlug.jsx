@@ -13,7 +13,6 @@ import AddCollectionModal from "~/components/AddCollectionModal";
 import slugify from "slugify";
 
 export const action = async({request, params}) => {
-  console.log(params)
   const user = await getUser(request);
   const formData = await request.formData();
   const collectionName = formData.get('collection-name')
@@ -55,7 +54,6 @@ export default function UserRecipeDetailsPage() {
   const {user, recipe, message, userCheckIns, collections} = useLoaderData();
   const actionData = useActionData()
   const actionMessage  = actionData?.message || null
-  console.log(actionMessage)
   const [ showModal, setShowModal ] = useState(false)
   const date = formatDate(recipe.createdAt)
   return (

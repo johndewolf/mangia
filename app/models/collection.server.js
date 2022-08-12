@@ -1,6 +1,6 @@
 import { prisma } from "~/db.server";
 
-export function createCollection({ slug, title, userId, recipeId }) {
+export function createCollection({ slug, title, userId, recipeSlug }) {
   const data = {
     title,
     slug,
@@ -9,9 +9,20 @@ export function createCollection({ slug, title, userId, recipeId }) {
         id: userId,
       },
     },
+
   }
-  if (recipeId) {
-    data.recipes = recipeId
+  if (recipeSlug) {
+    data.recipes = {
+      create: [
+        {
+          recipe: {
+            connect: {
+              slug: recipeSlug,
+            },
+          },
+        }
+      ]
+    }
   }
   return prisma.collection.create({
     data
@@ -30,13 +41,18 @@ export function getCollectionsByUser(username) {
       slug: true,
       recipes: {
         select: {
-          title: true,
-          slug: true,
-          user: {
+          recipe: {
             select: {
-              username: true
+              title: true,
+              slug: true,
+              user: {
+                select: {
+                  username: true
+                }
+              }
             }
-          }
+            
+          },
         }
       }
     }

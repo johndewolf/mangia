@@ -121,18 +121,19 @@ export default function UserDetailPage() {
           Collections
         </h3>
         
-            {collections.length > 0 ?
+            {collections && collections.length > 0 ?
             <Accordion>
             {collections.map(collection => (
               <Accordion.Panel key={collection.id}>
                 <Accordion.Title>
                   {collection.title}
                 </Accordion.Title>
+                
                 <Accordion.Content>
-                { collection.recipes.length > 0 ?
+                { collection.recipes && collection.recipes.length > 0 ?
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {collection.recipes.map(recipe => (
-                  <RecipeItem recipe={recipe} currentUsername={user.username} key={recipe.id} />
+                  <RecipeItem recipe={recipe.recipe} currentUsername={user.username} key={recipe.id} />
                 ))}
                 </ul>
                  : <p className="text-sm italic">Collection has no recipes</p> }
@@ -155,7 +156,7 @@ export default function UserDetailPage() {
 const RecipeItem = ({recipe, currentUsername}) => {
   const fetcher = useFetcher();
   const isUser = recipe.user.username === currentUsername
-
+  console.log(recipe)
   return (
     <li className="hover:bg-blue-100 px-4" key={recipe.id}>
       <div className="flex items-center">
