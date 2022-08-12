@@ -48,11 +48,19 @@ async function seed() {
       userId: user.id,
     },
   });
+
+  await prisma.collection.create({
+    data: {
+      title: 'My collection',
+      slug: 'my-collection',
+      recipes: recipe.id
+    }
+  })
   await prisma.ingredient.create({
     data:{
         quantity: '1',
         metric:'cup',
-        body: 'balic',
+        body: 'basil',
         recipeId: recipe.id
     }
   })

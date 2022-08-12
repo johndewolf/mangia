@@ -19,6 +19,7 @@ export default function RecipeDetailsPage() {
   return (
     <Layout>
       <h1 className="text-2xl font-bold">{recipe.title} &mdash; <Link to={`/user/${recipe.user.username}`}>{recipe.user.username}</Link></h1>
+      
       <hr className="my-4" />
       <ul>
       {recipe.ingredients.map((step) => (<li key={`ing-${step.id}`}>{step.body}</li>))}
