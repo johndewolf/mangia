@@ -37,11 +37,6 @@ export const action = async ({ request }) => {
   }
 
   const user = await verifyLogin(email, password);
-  console.log(user)
-  console.log(user.email)
-  console.log(user.id)
-  const redirectTo = safeRedirect(formData.get("redirectTo"), `/user/${user.username}`);
-
   if (!user) {
     return json(
       { errors: { email: "Invalid email or password" } },
@@ -49,6 +44,7 @@ export const action = async ({ request }) => {
     );
   }
 
+  const redirectTo = safeRedirect(formData.get("redirectTo"), `/user/${user.username}`);
   return createUserSession({
     request,
     userId: user.id,
