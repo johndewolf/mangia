@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { createRecipeCheckInByUser, getRecipeBySlug, getRecipeCheckInsByUser } from "~/models/recipe.server";
-import { getCollectionsByUser, createCollection } from '~/models/collection.server'
+import { getCollectionsByUser,createCollection, getCollectionWithRecipeByUser, deleteCollectionRecipeConnection, createCollectionRecipeConnection } from '~/models/collection.server'
 import { Link, useLoaderData, useFetcher, useActionData } from "@remix-run/react";
 import { useState } from "react";
 import Layout from "~/components/Layout";
@@ -16,12 +16,47 @@ export const action = async({request, params}) => {
   const user = await getUser(request);
   const formData = await request.formData();
   const collectionName = formData.get('collection-name')
+  const addRecipeToCollections = formData.get('add-recipe-to-collections')
   const recipeSlug = params.recipeSlug
   if (collectionName) {
     const slug = slugify(collectionName)
     await createCollection({slug: slug, title: collectionName, userId: user.id, recipeSlug})
 
     return json({message: `${collectionName} created successfully`, status: 200})
+  }
+  else if (addRecipeToCollections) {
+    const recipe = await getRecipeBySlug({ slug: params.recipeSlug });
+    const selectedCollections = formData.getAll('collection-id')
+    const allCollections = formData.get('all-collections').split(',');
+    const collectionsWithRecipe = await getCollectionWithRecipeByUser(user.id, recipe.id)
+    const selectedCollectionsToUpdate = selectedCollections.filter((collection) => {
+      return (
+        collectionsWithRecipe.findIndex((ele) => ele.id === collection) < 0
+      )
+    })
+
+    const unselectedCollections = allCollections.filter((collection) => {
+      return (
+        collection !== '' && selectedCollections.indexOf(collection) < 0 &&
+        collectionsWithRecipe.findIndex((ele) => ele.id === collection) > -1
+      )
+    })
+
+    try {
+      await Promise.all(
+        unselectedCollections.map(async (collection) => {
+          await deleteCollectionRecipeConnection(collection, recipe.id)
+        }),
+        selectedCollectionsToUpdate.map(async (collection) => {
+          await createCollectionRecipeConnection(collection, recipe.id)
+        }),
+      )
+      return json({message: `Collections updated`, status: 200})
+    }
+    catch (error) {
+      console.log(error)
+      throw new Response("Big Error", { status: 500 });
+    }
   }
   else {
     await createRecipeCheckInByUser({ userId: user.id, recipeSlug });
@@ -36,7 +71,7 @@ export const loader = async ({ request, params }) => {
   const userCheckIns = await getRecipeCheckInsByUser({recipeId: recipe.id, userId: user?.id})
   const session = await getSession(request);
   const message = session.get("globalMessage") || null;
-  const collections = await getCollectionsByUser()
+  const collections = await getCollectionsByUser(user.username)
   if (!recipe) {
     throw new Response("Not Found", { status: 404 });
   }
@@ -82,7 +117,7 @@ export default function UserRecipeDetailsPage() {
         </>
         }
       </div>
-      <AddCollectionModal showModal={showModal} setShowModal={setShowModal} collections={collections} />
+      <AddCollectionModal showModal={showModal} setShowModal={setShowModal} collections={collections} recipe={recipe} />
     </Layout>
   );
 }

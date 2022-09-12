@@ -26,7 +26,6 @@ export const loader = async ({ request, params }) => {
 };
 
 export const action = async ({ request }) => {
-  const userId = await requireUserId(request);
   const formData = await request.formData();
   const recipeId = formData.get("recipeId");
   const session = await getSession(request)
@@ -34,7 +33,7 @@ export const action = async ({ request }) => {
     "globalMessage",
     "Recipe deleted"
   );
-  await deleteRecipe({ userId, id: recipeId });
+  await deleteRecipe(recipeId);
   return json({message: `Recipe Deleted`, status: 200}, {headers: {
     "Set-Cookie": await sessionStorage.commitSession(session),
   }})
@@ -133,7 +132,7 @@ export default function UserDetailPage() {
                 { collection.recipes && collection.recipes.length > 0 ?
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {collection.recipes.map(recipe => (
-                  <RecipeItem recipe={recipe.recipe} currentUsername={user.username} key={recipe.id} />
+                  <RecipeItem recipe={recipe.recipe} currentUsername={user.username} key={`collection-${recipe.id}`} />
                 ))}
                 </ul>
                  : <p className="text-sm italic">Collection has no recipes</p> }
@@ -156,7 +155,6 @@ export default function UserDetailPage() {
 const RecipeItem = ({recipe, currentUsername}) => {
   const fetcher = useFetcher();
   const isUser = recipe.user.username === currentUsername
-  console.log(recipe)
   return (
     <li className="hover:bg-blue-100 px-4" key={recipe.id}>
       <div className="flex items-center">

@@ -70,7 +70,7 @@ model Collection {
 }
 
 model RecipeOnCollection {
-  recipe       Recipe     @relation(fields: [recipeId], references: [id])
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   recipeId     String
   collection   Collection @relation(fields: [collectionId], references: [id])
   collectionId String

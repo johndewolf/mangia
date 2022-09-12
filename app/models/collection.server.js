@@ -43,6 +43,7 @@ export function getCollectionsByUser(username) {
         select: {
           recipe: {
             select: {
+              id: true,
               title: true,
               slug: true,
               user: {
@@ -57,4 +58,51 @@ export function getCollectionsByUser(username) {
       }
     }
   });
+}
+
+export function deleteCollectionRecipeConnection(collectionId, recipeId) {
+  return prisma.recipeOnCollection.deleteMany({
+    where: {
+      AND: [
+        {
+          collectionId,
+          recipeId
+        }
+      ]
+    },
+  })
+}
+
+export function getCollectionWithRecipeByUser(userId, recipeId) {
+  return prisma.collection.findMany({
+    where: { user: {id: userId}, recipes: { some: {recipe: {id: recipeId  } }}},
+    orderBy: {
+      title: 'desc'
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      recipes: {
+        select: {
+          recipe: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+            }
+          },
+        }
+      }
+    }
+  });
+}
+
+export function createCollectionRecipeConnection(collectionId, recipeId) {
+  return prisma.recipeOnCollection.create({
+    data: {
+      collectionId,
+      recipeId
+    }
+  })
 }
