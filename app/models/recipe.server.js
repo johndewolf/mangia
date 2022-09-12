@@ -31,7 +31,6 @@ export function getRecipe(id) {
   });
 }
 
-
 export function getRecipeBySlug(slug) {
   return prisma.recipe.findFirst({
     where: slug,
@@ -45,7 +44,7 @@ export function getRecipeBySlug(slug) {
 
 
 export function getRecipeByUser(userId) {
-  return prisma.findFirst.findFirst({
+  return prisma.recipe.findFirst({
     where: { userId },
   });
 }
@@ -59,7 +58,12 @@ export function getRecipesByUser(username) {
     select: {
       id: true,
       title: true,
-      slug: true
+      slug: true,
+      user: {
+        select: {
+          username: true
+        }
+      }
     }
   });
 }
@@ -77,20 +81,27 @@ export function getRecipeCheckInsByUser({recipeId, userId}) {
   });
 }
 
-
-export function createRecipeCheckInByUser({recipeId, userId}) {
+export function createRecipeCheckInByUser({recipeSlug, userId}) {
   return prisma.checkIn.create({
     data: {
-      recipeId,
-      userId
+      recipe: {
+        connect: {
+          slug: recipeSlug
+        }
+      },
+      user: {
+        connect: {
+          id: userId
+        }
+      }
     }
   });
 }
 
 
-export function deleteRecipe({ id, userId }) {
+export function deleteRecipe(id) {
   return prisma.recipe.deleteMany({
-    where: { id, userId },
+    where: { id },
   });
 }
 

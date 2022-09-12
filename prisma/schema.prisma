@@ -14,10 +14,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  password Password?
-  notes    Note[]
-  recipes  Recipe[]
-  checkIns CheckIn[]
+  password    Password?
+  notes       Note[]
+  recipes     Recipe[]
+  checkIns    CheckIn[]
+  collections Collection[]
 }
 
 model Password {
@@ -35,10 +36,11 @@ model Recipe {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId   String
-  steps    Step[]
-  checkIns CheckIn[]
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      String
+  steps       Step[]
+  checkIns    CheckIn[]
+  collections RecipeOnCollection[]
 }
 
 model Ingredient {
@@ -55,6 +57,25 @@ model Step {
   body     String
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   recipeId String
+}
+
+model Collection {
+  id        String               @id @default(cuid())
+  createdAt DateTime             @default(now())
+  recipes   RecipeOnCollection[]
+  title     String
+  slug      String
+  user      User?                @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model RecipeOnCollection {
+  recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  recipeId     String
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  collectionId String
+
+  @@id([recipeId, collectionId])
 }
 
 model CheckIn {

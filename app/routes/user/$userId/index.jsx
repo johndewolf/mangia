@@ -5,9 +5,9 @@ import { getUserByUsername, getUserCheckIns } from '~/models/user.server.js'
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useFetcher, useParams, useCatch } from "@remix-run/react";
 import { getUser, requireUserId, getSession, sessionStorage } from "~/session.server.js"
-import { Card, Dropdown, Table } from "flowbite-react";
+import { Accordion, Card, Dropdown, Table } from "flowbite-react";
 import { formatDate } from "~/utils"
-
+import { getCollectionsByUser } from '~/models/collection.server'
 export const loader = async ({ request, params }) => {
   invariant(params.userId, "userId not found");
   const user = await getUser(request);
@@ -19,14 +19,13 @@ export const loader = async ({ request, params }) => {
   const message = session.get("globalMessage") || null;
   const recipes = await getRecipesByUser({ username: params.userId });
   const checkIns = await getUserCheckIns({userId: pageUser.id})
-  
-  return json({ recipes, user, message, checkIns }, {headers: {
+  const collections = await getCollectionsByUser(params.userId)
+  return json({ recipes, user, message, checkIns, collections }, {headers: {
     "Set-Cookie": await sessionStorage.commitSession(session),
   }});
 };
 
 export const action = async ({ request }) => {
-  const userId = await requireUserId(request);
   const formData = await request.formData();
   const recipeId = formData.get("recipeId");
   const session = await getSession(request)
@@ -34,7 +33,7 @@ export const action = async ({ request }) => {
     "globalMessage",
     "Recipe deleted"
   );
-  await deleteRecipe({ userId, id: recipeId });
+  await deleteRecipe(recipeId);
   return json({message: `Recipe Deleted`, status: 200}, {headers: {
     "Set-Cookie": await sessionStorage.commitSession(session),
   }})
@@ -49,7 +48,7 @@ const noRecipesMessage = (isUser, username) => {
   }
 }
 export default function UserDetailPage() {
-  const { recipes, user, message, checkIns } = useLoaderData();
+  const { recipes, user, message, checkIns, collections } = useLoaderData();
   const { userId } = useParams();
   const isUser = userId === user?.username;
 
@@ -68,10 +67,10 @@ export default function UserDetailPage() {
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 { recipes.length > 0 ?
                 recipes.map(recipe => (
-                  <RecipeItem recipe={recipe} isUser={isUser} key={recipe.id} />
+                  <RecipeItem recipe={recipe} currentUsername={user.username} key={recipe.id} />
                 ))
                 :
-                noRecipesMessage(isUser, user.username)
+                noRecipesMessage(isUser, userId)
                 }
 
               </ul>
@@ -114,15 +113,48 @@ export default function UserDetailPage() {
             }
           </Table.Body>
         </Table>
-      </div> 
+      </div>
+
+      <div className="max-w-xl mt-12">
+        <h3 className="text-xl mb-4 font-bold leading-none text-gray-900 dark:text-white">
+          Collections
+        </h3>
+        
+            {collections && collections.length > 0 ?
+            <Accordion>
+            {collections.map(collection => (
+              <Accordion.Panel key={collection.id}>
+                <Accordion.Title>
+                  {collection.title}
+                </Accordion.Title>
+                
+                <Accordion.Content>
+                { collection.recipes && collection.recipes.length > 0 ?
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                {collection.recipes.map(recipe => (
+                  <RecipeItem recipe={recipe.recipe} currentUsername={user.username} key={`collection-${recipe.id}`} />
+                ))}
+                </ul>
+                 : <p className="text-sm italic">Collection has no recipes</p> }
+                
+                </Accordion.Content>
+              </Accordion.Panel>
+            ))}
+            </Accordion>
+            :
+            <p>No collections yet!</p>
+            }
+        
+      </div>
+
     </Layout>
   );
 }
 
 
-const RecipeItem = ({recipe, isUser}) => {
+const RecipeItem = ({recipe, currentUsername}) => {
   const fetcher = useFetcher();
-
+  const isUser = recipe.user.username === currentUsername
   return (
     <li className="hover:bg-blue-100 px-4" key={recipe.id}>
       <div className="flex items-center">

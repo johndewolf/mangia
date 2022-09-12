@@ -8,6 +8,7 @@ const Layout = ({message, children}) => {
     <Sidebar />
     <main className="grow p-8 relative">
       {children}
+      {/* to do: fix bug of toast not showing after dismissed and new message */}
       {message ? 
       <div className="absolute bottom-4 right-4">
         <Toast>
