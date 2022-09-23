@@ -36,6 +36,7 @@
     "@remix-run/server-runtime": "^1.7.2",
     "axios": "^0.27.2",
     "bcryptjs": "^2.4.3",
+    "daisyui": "^2.31.0",
     "flowbite": "^1.5.3",
     "flowbite-react": "^0.1.11",
     "openai": "^3.0.0",

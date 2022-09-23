@@ -91,102 +91,100 @@ export default function Join() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col justify-center bg-cyan-100">
-      <div className="mx-auto w-full max-w-md px-8 ">
-        <Card>
-          <Form method="post" className="space-y-6">
+    <div className="flex min-h-screen w-full flex-col justify-center bg-cyan-100 items-center">
+      <div className="card w-96 bg-base-100 shadow-xl">
+        <div className="card-body">
+          <Form method="post">
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="label"
               >
                 Email address
               </label>
-              <div className="mt-1">
-                <input
-                  ref={emailRef}
-                  id="email"
-                  required
-                  autoFocus={true}
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={actionData?.errors?.email ? true : undefined}
-                  aria-describedby="email-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                />
 
-                {actionData?.errors?.email && (
-                  <div className="pt-1 text-red-700" id="email-error">
-                    {actionData.errors.email}
-                  </div>
-                )}
-              </div>
+              <input
+                ref={emailRef}
+                id="email"
+                required
+                autoFocus={true}
+                name="email"
+                type="email"
+                autoComplete="email"
+                aria-invalid={actionData?.errors?.email ? true : undefined}
+                aria-describedby="email-error"
+                className="input input-bordered input-md block w-full"
+              />
+
+              {actionData?.errors?.email && (
+                <div className="text-error mt-2" id="email-error">
+                  {actionData.errors.email}
+                </div>
+              )}
             </div>
-            <div>
+            <div className="mt-4">
               <label
                   htmlFor="username"
-                  className="block text-sm font-medium text-gray-700"
+                  className="label"
                 >
                   Username
               </label>
-              <div className="mt-1">
-                <input
-                  ref={usernameRef}
-                  id="username"
-                  required
-                  autoFocus={true}
-                  onBlur={()=>console.log('blur')}
-                  name="username"
-                  type="username"
-                  autoComplete="username"
-                  aria-invalid={actionData?.errors?.username ? true : undefined}
-                  aria-describedby="username-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                />
+              <input
+                ref={usernameRef}
+                id="username"
+                required
+                autoFocus={true}
+                onBlur={()=>console.log('blur')}
+                name="username"
+                type="username"
+                autoComplete="username"
+                aria-invalid={actionData?.errors?.username ? true : undefined}
+                aria-describedby="username-error"
+                className="input input-bordered input-md block w-full"
+              />
 
-                {actionData?.errors?.username && (
-                  <div className="pt-1 text-red-700" id="email-error">
-                    {actionData.errors.username}
-                  </div>
-                )}
-              </div>
+              {actionData?.errors?.username && (
+                <div className="text-error mt-2" id="email-error">
+                  {actionData.errors.username}
+                </div>
+              )}
             </div>
-            <div>
+
+            <div className="mt-4">
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                className="label"
               >
                 Password
               </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  ref={passwordRef}
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  aria-invalid={actionData?.errors?.password ? true : undefined}
-                  aria-describedby="password-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                />
+              <input
+                id="password"
+                ref={passwordRef}
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={actionData?.errors?.password ? true : undefined}
+                aria-describedby="password-error"
+                className="input input-bordered input-md block w-full"
+              />
 
-                {actionData?.errors?.password && (
-                  <div className="pt-1 text-red-700" id="password-error">
-                    {actionData.errors.password}
-                  </div>
-                )}
-              </div>
+              {actionData?.errors?.password && (
+                <div className="text-error mt-2" id="password-error">
+                  {actionData.errors.password}
+                </div>
+              )}
             </div>
 
-            <input type="hidden" name="redirectTo" value={redirectTo} />
-            <button
-              type="submit"
-              className="w-full rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-            >
-              Create Account
-            </button>
-            <div className="flex items-center justify-center">
+            <div className="mt-4">
+              <input type="hidden" name="redirectTo" value={redirectTo} />
+              <button
+                type="submit"
+                className="btn btn-primary btn-block"
+              >
+                Create Account
+              </button>
+            </div>
+            <div className="flex items-center justify-center mt-8">
               <div className="text-center text-sm text-gray-500">
                 Already have an account?{" "}
                 <Link
@@ -201,7 +199,7 @@ export default function Join() {
               </div>
             </div>
           </Form>
-        </Card>
+        </div>
       </div>
     </div>
   );

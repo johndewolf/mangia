@@ -5,7 +5,7 @@ import * as React from "react";
 import { createUserSession, getUserId } from "~/session.server";
 import { verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
-import { Card } from "flowbite-react";
+
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
@@ -75,103 +75,103 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col justify-center bg-cyan-100">
-      <div className="mx-auto w-full max-w-md px-8 ">
-        <Card>
-          <Form method="post" className="space-y-6">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  ref={emailRef}
-                  id="email"
-                  required
-                  autoFocus={true}
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  aria-invalid={actionData?.errors?.email ? true : undefined}
-                  aria-describedby="email-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                />
-
-                {actionData?.errors?.email && (
-                  <div className="pt-1 text-red-700" id="email-error">
-                    {actionData.errors.email}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  ref={passwordRef}
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  aria-invalid={actionData?.errors?.password ? true : undefined}
-                  aria-describedby="password-error"
-                  className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-                />
-
-                {actionData?.errors?.password && (
-                  <div className="pt-1 text-red-700" id="password-error">
-                    {actionData.errors.password}
-                  </div>
-                )}
-              </div>
-            </div>
-            {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} /> }
-            <button
-              type="submit"
-              className="w-full rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+    <div className="flex min-h-screen w-full flex-col justify-center bg-cyan-100 items-center">
+      <div className="card w-96 bg-base-100 shadow-xl">
+        <div className="card-body">
+        <Form method="post">
+          <div>
+            <label
+              htmlFor="email"
+              className="label"
             >
-              Log in
-            </button>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember"
-                  name="remember"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
+              Email address
+            </label>
 
-                <label
-                  htmlFor="remember"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Remember me
-                </label>
+            <input
+              ref={emailRef}
+              id="email"
+              required
+              autoFocus={true}
+              name="email"
+              type="email"
+              autoComplete="email"
+              aria-invalid={actionData?.errors?.email ? true : undefined}
+              aria-describedby="email-error"
+              className="input input-bordered input-md block w-full"
+            />
+
+            {actionData?.errors?.email && (
+              <div className="text-error mt-2 text-sm" id="email-error">
+                {actionData.errors.email}
               </div>
-              <div className="text-center text-sm text-gray-500">
-                Don't have an account?{" "}
-                <Link
-                  className="text-blue-500 underline"
-                  to={{
-                    pathname: "/join",
-                    search: searchParams.toString(),
-                  }}
-                >
-                  Sign up
-                </Link>
+            )}
+
+          </div>
+
+          <div className="mt-4">
+            <label
+              htmlFor="password"
+              className="label"
+            >
+              Password
+            </label>
+            
+            <input
+              id="password"
+              ref={passwordRef}
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              aria-invalid={actionData?.errors?.password ? true : undefined}
+              aria-describedby="password-error"
+              className="input input-bordered input-md block w-full"
+            />
+
+            {actionData?.errors?.password && (
+              <div className="text-error text-sm mt-2" id="password-error">
+                {actionData.errors.password}
               </div>
+            )}
+
+          </div>
+          {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} /> }
+          <button
+            type="submit"
+            className="btn btn-primary btn-block mt-4"
+          >
+            Log in
+          </button>
+
+            <div className="flex items-center mt-4">
+              <input
+                id="remember"
+                name="remember"
+                type="checkbox"
+                className="checkbox"
+              />
+
+              <label
+                htmlFor="remember"
+                className="label ml-2"
+              >
+                Remember me
+              </label>
             </div>
-          </Form>
-        </Card>
+            <div className="text-center text-sm text-gray-500 mt-8">
+              Don't have an account?{" "}
+              <Link
+                className="text-blue-500 underline"
+                to={{
+                  pathname: "/join",
+                  search: searchParams.toString(),
+                }}
+              >
+                Sign up
+              </Link>
+            </div>
+
+        </Form>
+        </div>
       </div>
     </div>
   );
