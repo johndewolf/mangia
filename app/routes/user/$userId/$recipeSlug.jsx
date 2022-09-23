@@ -6,7 +6,7 @@ import { Link, useLoaderData, useFetcher, useActionData } from "@remix-run/react
 import { useState } from "react";
 import Layout from "~/components/Layout";
 import { getSession, sessionStorage, getUser } from "~/session.server";
-import { HiCheck, HiOutlineStar } from "react-icons/hi";
+import { HiOutlineCheckCircle, HiOutlineBookmark } from "react-icons/hi";
 import { formatDate } from "~/utils";
 import AddCollectionModal from "~/components/AddCollectionModal";
 
@@ -99,19 +99,20 @@ export default function UserRecipeDetailsPage() {
             <h1 className="text-2xl font-bold">{recipe.title}</h1>
             <h2 className="text-lg mt-4">Created By <Link to={`/user/${recipe.user.username}`} className="text-blue-400 underline">{recipe.user.username}</Link> on {date}</h2>
           </div>
-          <HiOutlineStar title="add to collecion" onClick={() => setShowModal(true)} />
+
+          
         </div>
         {user && 
-          <CheckInButton userCheckIns={userCheckIns}  />
+          <UserActionButtons userCheckIns={userCheckIns} setShowModal={setShowModal}  />
         }
         <hr className="my-4" />
-        <ul className="list-disc">
+        <ul className="ml-8 list-disc">
         {recipe.ingredients.map((ingredient) => (<li key={ingredient.id}>{ingredient.quantity} {ingredient.metric} {ingredient.body}</li>))}
         </ul>
         {recipe?.steps.length > 0 &&
         <>
           <hr className="my-4" />
-          <ol className="list-decimal">
+          <ol className="ml-8 list-decimal">
             {recipe.steps.map((step) => (<li key={step.id} className="mt-4">{step.body}</li>))}
           </ol>
         </>
@@ -122,16 +123,27 @@ export default function UserRecipeDetailsPage() {
   );
 }
 
-const CheckInButton = ({userCheckIns}) => {
+
+const UserActionButtons = ({userCheckIns, setShowModal}) => {
   const fetcher = useFetcher();
   const checkInClicked = userCheckIns.length > 0;
-  const checkinClass = `flex h-fit items-center gap-1 font-semibold ${checkInClicked ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"} rounded-full p-1.5 p-1 text-xs mt-4`
   const pluralTimes = `time${userCheckIns.length > 1 ? 's' : ''}`
   return (
-    <fetcher.Form replace method="post">
-      <button className={checkinClass} type="submit">
-        <HiCheck /> {checkInClicked ? `You made this ${userCheckIns.length} ${pluralTimes}` : 'Did you make this recipe? Check in here' }
-      </button>
-    </fetcher.Form>
+  <div className="mt-4 flex gap-4 justify-between">
+    
+      <fetcher.Form replace method="post">
+      <div className="flex items-center">
+        <button className="btn btn-ghost btn-circle text-primary text-xl" type="submit">
+          <HiOutlineCheckCircle />
+        </button>
+        <p>You've made this recipe {userCheckIns.length} {pluralTimes}</p>
+      </div>
+      </fetcher.Form>
+    
+    <button className="btn btn-ghost btn-circle text-primary text-xl" type="submit" onClick={() => setShowModal(true)}>
+      <HiOutlineBookmark className="font" />
+    </button>
+
+  </div>
   )
 }

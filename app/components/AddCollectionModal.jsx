@@ -13,7 +13,6 @@ const isSelected = (recipes, recipeId) => {
 
  const AddCollectionModal = ({showModal, setShowModal, collections, recipe}) => {
   const [showNewForm, setShowNewForm ] = useState(false)
-  console.log(collections[2])
   useEffect(() => {
     return () => {
       setShowNewForm(false)
