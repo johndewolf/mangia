@@ -8,7 +8,7 @@ import Layout from "~/components/Layout";
 import { getSession, sessionStorage, getUser } from "~/session.server";
 import { HiOutlineCheckCircle, HiOutlineBookmark } from "react-icons/hi";
 import { formatDate } from "~/utils";
-import AddCollectionModal from "~/components/AddCollectionModal";
+import AddCollectionDrawer from "~/components/AddToCollectionDrawer";
 
 import slugify from "slugify";
 
@@ -93,32 +93,40 @@ export default function UserRecipeDetailsPage() {
   const date = formatDate(recipe.createdAt)
   return (
     <Layout message={message || actionMessage}>
-      <div style={{maxWidth: '48rem'}}>
-        <div className="flex items-center">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{recipe.title}</h1>
-            <h2 className="text-lg mt-4">Created By <Link to={`/user/${recipe.user.username}`} className="text-blue-400 underline">{recipe.user.username}</Link> on {date}</h2>
-          </div>
+      <div className="drawer drawer-end">
+        <input id="my-drawer" type="checkbox" className="drawer-toggle" checked={showModal} readOnly />
+        <div className="drawer-content">  
+          <div style={{maxWidth: '48rem'}}>
+            <div className="flex items-center">
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold">{recipe.title}</h1>
+                <h2 className="text-lg mt-4">Created By <Link to={`/user/${recipe.user.username}`} className="text-blue-400 underline">{recipe.user.username}</Link> on {date}</h2>
+              </div>
 
-          
+              
+            </div>
+            {user && 
+              <UserActionButtons userCheckIns={userCheckIns} setShowModal={setShowModal}  />
+            }
+            <hr className="my-4" />
+            <ul className="ml-8 list-disc">
+            {recipe.ingredients.map((ingredient) => (<li key={ingredient.id}>{ingredient.quantity} {ingredient.metric} {ingredient.body}</li>))}
+            </ul>
+            {recipe?.steps.length > 0 &&
+            <>
+              <hr className="my-4" />
+              <ol className="ml-8 list-decimal">
+                {recipe.steps.map((step) => (<li key={step.id} className="mt-4">{step.body}</li>))}
+              </ol>
+            </>
+            }
+          </div>
         </div>
-        {user && 
-          <UserActionButtons userCheckIns={userCheckIns} setShowModal={setShowModal}  />
-        }
-        <hr className="my-4" />
-        <ul className="ml-8 list-disc">
-        {recipe.ingredients.map((ingredient) => (<li key={ingredient.id}>{ingredient.quantity} {ingredient.metric} {ingredient.body}</li>))}
-        </ul>
-        {recipe?.steps.length > 0 &&
-        <>
-          <hr className="my-4" />
-          <ol className="ml-8 list-decimal">
-            {recipe.steps.map((step) => (<li key={step.id} className="mt-4">{step.body}</li>))}
-          </ol>
-        </>
-        }
+        <div className="drawer-side">
+          <label htmlFor="my-drawer" onClick={()=> setShowModal(false)} className="drawer-overlay"></label>
+          <AddCollectionDrawer showModal={showModal} setShowModal={setShowModal} collections={collections} recipe={recipe} />
+        </div>
       </div>
-      <AddCollectionModal showModal={showModal} setShowModal={setShowModal} collections={collections} recipe={recipe} />
     </Layout>
   );
 }
