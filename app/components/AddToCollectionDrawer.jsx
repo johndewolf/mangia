@@ -52,7 +52,9 @@ const ExistingCollectionsForm = ({setShowModal, collections, recipeId}) => {
     >
       {collections.map((collection) => {
         return (
+          
           <div className="flex items-center gap-2 mb-2"  key={collection.id}>
+            {console.log(collection)}
             <div className="form-control">
               <label className="label cursor-pointer gap-2" htmlFor={collection.id}> 
                 <input type="checkbox" defaultChecked={isSelected(collection.recipes, recipeId)} id={collection.id} value={collection.id} name="collection-id" className="checkbox" />

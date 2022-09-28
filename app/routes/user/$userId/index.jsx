@@ -7,6 +7,7 @@ import { Link, useLoaderData, useFetcher, useParams, useCatch } from "@remix-run
 import { getUser, requireUserId, getSession, sessionStorage } from "~/session.server.js"
 import { Accordion, Card, Dropdown, Table } from "flowbite-react";
 import { formatDate } from "~/utils"
+
 import { getCollectionsByUser } from '~/models/collection.server'
 export const loader = async ({ request, params }) => {
   invariant(params.userId, "userId not found");
@@ -27,6 +28,7 @@ export const loader = async ({ request, params }) => {
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
+  console.log('hit actions')
   const recipeId = formData.get("recipeId");
   const session = await getSession(request)
   session.flash(
@@ -54,35 +56,36 @@ export default function UserDetailPage() {
 
   return (
     <Layout message={message}>
-      <h1 className="text-2xl font-bold">Profile </h1>
-      <div className="flex mt-8">
-        <div className="max-w-md">
-          <Card>
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold leading-none text-gray-900 dark:text-white">
-                Recipes
-              </h3>
-              </div>
-              <div className="flow-root">
-                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                { recipes.length > 0 ?
-                recipes.map(recipe => (
-                  <RecipeItem recipe={recipe} currentUsername={user.username} key={recipe.id} />
-                ))
-                :
-                noRecipesMessage(isUser, userId)
-                }
-
-              </ul>
-            </div>
-            { isUser &&
-              <Link to="/recipes/new" className="mt-4 self-start rounded border-2 border-blue-500 bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400">
-              Create a Recipe
-              </Link>
-            }
-          </Card>
-        </div>
+      <div className="text-sm breadcrumbs mb-8">
+        <ul>
+          <li><Link to="/user">All Users</Link></li> 
+          <li>{userId}</li> 
+        </ul>
       </div>
+      <h1 className="text-3xl font-bold">{userId}</h1>
+
+      <section className="border-b border-solid border-slate-200 pb-4">
+        <h2 className="text-2xl leading-none text-gray-900 dark:text-white mt-8">
+          Recipes
+        </h2>
+        <div className="flex flex-row flex-wrap mt-4 gap-4">
+          { recipes.length > 0 ?
+          recipes.map(recipe => (
+            <RecipeItem recipe={recipe} user={user} key={recipe.id} />
+          ))
+          :
+            noRecipesMessage(isUser, userId)
+          }
+        </div>
+        { isUser &&
+          <Link to="/recipes/new" className="btn btn-primary mt-8 ml-auto">
+          Create a Recipe
+          </Link>
+        }
+      </section>
+
+
+
       <div className="max-w-xl mt-12">
         <h3 className="text-xl mb-4 font-bold leading-none text-gray-900 dark:text-white">
           Recent Check Ins
@@ -132,7 +135,7 @@ export default function UserDetailPage() {
                 { collection.recipes && collection.recipes.length > 0 ?
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {collection.recipes.map(recipe => (
-                  <RecipeItem recipe={recipe.recipe} currentUsername={user.username} key={`collection-${recipe.id}`} />
+                  <RecipeItem recipe={recipe.recipe} user={user} key={`collection-${recipe.recipe.id}`} />
                 ))}
                 </ul>
                  : <p className="text-sm italic">Collection has no recipes</p> }
@@ -152,46 +155,51 @@ export default function UserDetailPage() {
 }
 
 
-const RecipeItem = ({recipe, currentUsername}) => {
+const RecipeItem = ({recipe, user}) => {
   const fetcher = useFetcher();
-  const isUser = recipe.user.username === currentUsername
+  const username = user?.username
+  const isUser = recipe.user.username === username;
   return (
-    <li className="hover:bg-blue-100 px-4" key={recipe.id}>
-      <div className="flex items-center">
-        <div className="flex-1">
-          <Link to={recipe.slug} className="block py-2 sm:py-4">{recipe.title}</Link>
-        </div>
-        <div className="min-w-0 text-right">
+    <div className="card w-96 bg-base-100 shadow-xl card-bordered">
+      <div className="card-body">
+        <div className="flex flex-row justify-between">
+          <div className="card-title">
+            <Link to={recipe.slug} className="block py-2 sm:py-4">{recipe.title}</Link>
+          </div>
           {isUser && 
-            <Dropdown
-              inline={true}
-              label=""
-            >
-              <Dropdown.Item>
+          <div className="dropdown dropdown-left">
+            <label tabIndex={0} className="btn btn-ghost m-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                <path fillRule="evenodd" d="M10.5 6a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm0 6a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm0 6a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" clipRule="evenodd" />
+              </svg>
+            </label>
+            <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+              <li>
+                <fetcher.Form replace method="post">
+                  <button
+                      type="submit"
+                      value={recipe.id}
+                      name="recipeId"
+                      className="block w-full text-sm text-red-600"
+                    >
+                      Delete
+                  </button>
+                </fetcher.Form>
+              </li>
+              <li>
                 <button
                   disabled
-                  className="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                  className="block text-sm text-gray-700"
                 >
                   Edit
                 </button>
-              </Dropdown.Item>
-              <Dropdown.Item>
-                <fetcher.Form replace method="post">
-                  <button
-                    type="submit"
-                    value={recipe.id}
-                    name="recipeId"
-                    className="block py-2 px-4 text-sm text-red-600 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
-                  >
-                    Delete
-                  </button>
-                </fetcher.Form>
-              </Dropdown.Item>
-            </Dropdown>
+              </li>
+            </ul>
+          </div>
           }
         </div>
       </div>
-    </li>
+    </div>
   )
 }
 

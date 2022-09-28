@@ -137,7 +137,7 @@ export default function NewRecipe() {
 
   return (
     <Layout>
-      <div style={{maxWidth: '48rem'}}>
+      <div style={{maxWidth: '62rem'}}>
         {actionData?.suggestion}
         <div className="card shadow-xl card-bordered">
           <div className="card-body">

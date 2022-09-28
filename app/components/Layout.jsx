@@ -1,12 +1,13 @@
 import Sidebar from "./Sidebar"
 import { Toast } from "flowbite-react"
 import { HiCheck } from "react-icons/hi"
+import PropTypes from 'prop-types'
 
-const Layout = ({message, children}) => {
+const Layout = ({mainClasses, message, children}) => {
   return (
   <>
     <Sidebar />
-    <main className="grow p-8 relative">
+    <main className={mainClasses}>
       {children}
       {/* to do: fix bug of toast not showing after dismissed and new message */}
       {message ? 
@@ -26,6 +27,15 @@ const Layout = ({message, children}) => {
     </main>
   </>
   )
+}
+
+Layout.defaultProps = {
+  mainClasses: "grow p-8 relative"
+}
+
+Layout.protoTypes = {
+  message: PropTypes.string,
+  mainClasses: PropTypes.string
 }
 
 export default Layout

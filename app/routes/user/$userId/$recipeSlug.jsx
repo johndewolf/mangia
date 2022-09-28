@@ -92,11 +92,17 @@ export default function UserRecipeDetailsPage() {
   const [ showModal, setShowModal ] = useState(false)
   const date = formatDate(recipe.createdAt)
   return (
-    <Layout message={message || actionMessage}>
-      <div className="drawer drawer-end">
+    <Layout mainClasses="drawer drawer-end" message={message || actionMessage}>
         <input id="my-drawer" type="checkbox" className="drawer-toggle" checked={showModal} readOnly />
         <div className="drawer-content">  
-          <div style={{maxWidth: '48rem'}}>
+          <div style={{maxWidth: '62rem'}} className="p-8">
+            <div className="text-sm breadcrumbs mb-8">
+              <ul>
+                <li><Link to="/user">All Users</Link></li> 
+                <li><Link to={`/user/${recipe.user.username}`}>{recipe.user.username}</Link></li> 
+                <li>{recipe.title}</li>
+              </ul>
+            </div>
             <div className="flex items-center">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">{recipe.title}</h1>
@@ -126,7 +132,7 @@ export default function UserRecipeDetailsPage() {
           <label htmlFor="my-drawer" onClick={()=> setShowModal(false)} className="drawer-overlay"></label>
           <AddCollectionDrawer showModal={showModal} setShowModal={setShowModal} collections={collections} recipe={recipe} />
         </div>
-      </div>
+
     </Layout>
   );
 }
