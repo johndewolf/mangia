@@ -4,8 +4,7 @@ import { getRecipesByUser, deleteRecipe } from '~/models/recipe.server.js'
 import { getUserByUsername, getUserCheckIns } from '~/models/user.server.js'
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useFetcher, useParams, useCatch } from "@remix-run/react";
-import { getUser, requireUserId, getSession, sessionStorage } from "~/session.server.js"
-import { Accordion, Card, Dropdown, Table } from "flowbite-react";
+import { getUser, getSession, sessionStorage } from "~/session.server.js"
 import { formatDate } from "~/utils"
 
 import { getCollectionsByUser } from '~/models/collection.server'
@@ -64,8 +63,8 @@ export default function UserDetailPage() {
       </div>
       <h1 className="text-3xl font-bold">{userId}</h1>
 
-      <section className="border-b border-solid border-slate-200 pb-4">
-        <h2 className="text-2xl leading-none text-gray-900 dark:text-white mt-8">
+      <section className="border-b border-solid border-slate-200 pb-12">
+        <h2 className="text-2xl leading-none mt-8">
           Recipes
         </h2>
         <div className="flex flex-row flex-wrap mt-4 gap-4">
@@ -86,70 +85,71 @@ export default function UserDetailPage() {
 
 
 
-      <div className="max-w-xl mt-12">
-        <h3 className="text-xl mb-4 font-bold leading-none text-gray-900 dark:text-white">
+      <section className="max-w-xl mt-12 border-b border-solid border-slate-200 pb-12">
+        <h2 className="text-2xl mb-4 leading-none">
           Recent Check Ins
-        </h3>
-        <Table>
-          <Table.Head>
-            <Table.HeadCell>
-              Recipe
-            </Table.HeadCell>
-            <Table.HeadCell>
-              Recipe Creator
-            </Table.HeadCell>
-            <Table.HeadCell>
-              Check In Date
-            </Table.HeadCell>
-          </Table.Head>
-          <Table.Body>
+        </h2>
+        <table className="table w-full mt-8">
+          <thead>
+            <tr>
+              <th>
+                Recipe
+              </th>
+              <th>
+                Recipe Creator
+              </th>
+              <th>
+                Check In Date
+              </th>
+            </tr>
+          </thead>
+          <tbody>
             {checkIns.length > 0 ?
             checkIns.map(checkIn => (
-              <Table.Row key={checkIn.id}>
-                <Table.Cell><Link to={`/user/${checkIn.recipe.user.username}/${checkIn.recipe.slug}`}>{checkIn.recipe.title}</Link></Table.Cell>
-                <Table.Cell><Link to={`/user/${checkIn.recipe.user.username}/`}>{checkIn.recipe.user.username}</Link></Table.Cell>
-                <Table.Cell>{formatDate(checkIn.createdAt)}</Table.Cell>
-              </Table.Row>
+              <tr key={checkIn.id}>
+                <td><Link className="link" to={`/user/${checkIn.recipe.user.username}/${checkIn.recipe.slug}`}>{checkIn.recipe.title}</Link></td>
+                <td><Link to={`/user/${checkIn.recipe.user.username}/`}>{checkIn.recipe.user.username}</Link></td>
+                <td>{formatDate(checkIn.createdAt)}</td>
+              </tr>
             ))
             :
-            <Table.Row><Table.Cell colSpan={3}>No checkins!</Table.Cell></Table.Row>
+            <tr><td colSpan={3}>No checkins!</td></tr>
             }
-          </Table.Body>
-        </Table>
-      </div>
+          </tbody>
+        </table>
+      </section>
 
-      <div className="max-w-xl mt-12">
-        <h3 className="text-xl mb-4 font-bold leading-none text-gray-900 dark:text-white">
+      <section>
+        <h2 className="text-2xl mt-12 mb-4 leading-none">
           Collections
-        </h3>
-        
-            {collections && collections.length > 0 ?
-            <Accordion>
-            {collections.map(collection => (
-              <Accordion.Panel key={collection.id}>
-                <Accordion.Title>
-                  {collection.title}
-                </Accordion.Title>
-                
-                <Accordion.Content>
-                { collection.recipes && collection.recipes.length > 0 ?
-                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                {collection.recipes.map(recipe => (
-                  <RecipeItem recipe={recipe.recipe} user={user} key={`collection-${recipe.recipe.id}`} />
-                ))}
-                </ul>
-                 : <p className="text-sm italic">Collection has no recipes</p> }
-                
-                </Accordion.Content>
-              </Accordion.Panel>
-            ))}
-            </Accordion>
-            :
-            <p>No collections yet!</p>
-            }
-        
-      </div>
+        </h2>
+        {collections && collections.length > 0 ?
+        <div className="flex flex-row flex-wrap mt-4 gap-4">
+        {collections.map(collection => (
+          <div className="card w-96 bg-base-100 shadow-xl card-bordered" key={collection.id}>
+            <div className="card-body">
 
+                <div className="card-title mb-4">
+                  {collection.title}
+                </div>
+
+              { collection.recipes && collection.recipes.length > 0 ?
+              <ul className="pl-4 list-disc  divide-y divide-gray-200 dark:divide-gray-700">
+              {collection.recipes.map(recipe => (
+                <li key={`collection-${recipe.recipe.id}`}><Link className="link" to={`/user/${recipe.recipe.user.username}/${recipe.recipe.slug}`}>{recipe.recipe.title}</Link></li>
+              ))}
+              </ul>
+                : <p className="italic">Collection has no recipes</p> }
+
+            </div>
+          </div>
+
+          ))}
+          </div>
+        :
+          <p>No collections yet!</p>
+        }       
+      </section>
     </Layout>
   );
 }

@@ -6,7 +6,7 @@ import { getUserId, createUserSession } from "~/session.server";
 
 import { createUser, getUserByEmail, getUserByUsername } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
-import { Card } from "flowbite-react";
+
 export const loader = async ({ request }) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
@@ -134,7 +134,6 @@ export default function Join() {
                 id="username"
                 required
                 autoFocus={true}
-                onBlur={()=>console.log('blur')}
                 name="username"
                 type="username"
                 autoComplete="username"

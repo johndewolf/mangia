@@ -7,12 +7,12 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-
+import toastCSS from 'react-toastify/dist/ReactToastify.css'
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 
 export const links = () => {
-  return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
+  return [{ rel: "stylesheet", href: tailwindStylesheetUrl }, {rel: "stylesheet", href: toastCSS}];
 };
 
 export const meta = () => ({
@@ -34,7 +34,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="flex">
+      <body style={{display: "grid", gridTemplateColumns: "16rem 1fr;"}}>
         <Outlet />
         <ScrollRestoration />
         <Scripts />

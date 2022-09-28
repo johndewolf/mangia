@@ -1,3 +1,4 @@
+import { Checkbox, Label, Modal } from "flowbite-react"
 import { Form } from "@remix-run/react"
 import { useState, useEffect } from "react"
 import PropTypes from 'prop-types';
@@ -18,55 +19,56 @@ const isSelected = (recipes, recipeId) => {
     }
   }, [showModal])
   return (
+  <Modal
+    show={showModal}
+    size="lg"
+    popup={true}
+    onClose={() => (setShowModal(false))}
+  >
+    <Modal.Header>
+      Add Recipe to Collection
+    </Modal.Header>
+    <Modal.Body>
 
-  <div className="menu p-4 overflow-y-auto w-80 bg-base-100 text-base-content">
     {showNewForm ? 
       <NewCollectionForm setShowModal={setShowModal} recipeName={recipe.title} />
     : 
       <div>
-        <h2 className="text-xl font-bold mb-4">Create New Collection</h2>
         <button
-          className="btn btn-primary btn-outline mb-2"
+          className="block mx-auto rounded border-2 border-blue-500 bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
           onClick={() => setShowNewForm(true)}
-        >Create</button>
+        >Create New Collection</button>
   
-        <div className="divider">OR</div>
+
         {collections.length > 0 &&
         <ExistingCollectionsForm collections={collections} setShowModal={setShowModal} recipeId={recipe.id} />
         }
-        
       </div>
     }
-
-  </div>  
+    </Modal.Body>
+  </Modal>  
 )}
 
 const ExistingCollectionsForm = ({setShowModal, collections, recipeId}) => {
   return (
-    <>
-    <h2 className="text-xl font-bold mb-4">Edit Existing Collections</h2>
     <Form
       method="post"
       onSubmit={() => setShowModal(false)}
     >
       {collections.map((collection) => {
         return (
-          
           <div className="flex items-center gap-2 mb-2"  key={collection.id}>
-            <div className="form-control">
-              <label className="label cursor-pointer gap-2" htmlFor={collection.id}> 
-                <input type="checkbox" defaultChecked={isSelected(collection.recipes, recipeId)} id={collection.id} value={collection.id} name="collection-id" className="checkbox" />
-                <span className="label-text">{collection.title}</span>
-              </label>
-            </div>
+          <Checkbox defaultChecked={isSelected(collection.recipes, recipeId)} id={collection.id} value={collection.id} name="collection-id" />
+          <Label htmlFor={collection.id}>
+            {collection.title}
+          </Label>
           </div>
         )
       })}
       <input type="hidden" name="all-collections" value={collections.reduce((accum, cur) => `${cur.id},`+accum , '')} />
       <input type='hidden' name="add-recipe-to-collections" value="true" />
-      <button className="btn btn-primary mt-2" type="submit">Update</button>
+      <button className="w-full mt-2 rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400" type="submit">Submit</button>
     </Form>
-    </>
 
   )
 }
@@ -74,7 +76,6 @@ const ExistingCollectionsForm = ({setShowModal, collections, recipeId}) => {
 const NewCollectionForm = ({setShowModal, recipeName}) => {
   const [fieldValue, setFieldValue] = useState(`${recipeName} collection`);
   return (
-    <>
     <Form
       method="post"
       onSubmit={() => setShowModal(false)}
@@ -89,9 +90,8 @@ const NewCollectionForm = ({setShowModal, recipeName}) => {
           className="flex-1 rounded-md border-2 border-gray-200 px-2"
         />
       </label>
-      <button className="btn btn-primary mt-4" type="submit">Save</button>
+      <button className="w-full mt-2 rounded bg-blue-500 py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400" type="submit">Save</button>
     </Form>
-    </>
   )
 }
 
