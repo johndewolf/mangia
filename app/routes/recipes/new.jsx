@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useFetcher, useSubmit } from "@remix-run/react";
+import { Form, useActionData, useSubmit } from "@remix-run/react";
 import * as React from "react";
 import Layout from '~/components/Layout'
 
@@ -73,7 +73,6 @@ export const action = async ({ request }) => {
 
 export default function NewRecipe() {
   const actionData = useActionData();
-  const fetcher = useFetcher();
   const submit = useSubmit()
   const titleRef = React.useRef(null);
   const formRef = React.useRef(null);

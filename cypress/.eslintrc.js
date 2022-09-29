@@ -3,4 +3,8 @@ module.exports = {
     jsconfigRootDir: __dirname,
     project: "./jsconfig.json",
   },
+  globals: {
+    "cy": true,
+    "Cypress": true
+  }
 };
