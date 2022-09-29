@@ -1,4 +1,4 @@
-app = "mangia-9dd7"
+app = "mangia"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = [ ]
