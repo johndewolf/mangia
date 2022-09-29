@@ -15,7 +15,6 @@ const Layout = ({mainClasses, message, children}) => {
     <Sidebar />
     <main className={mainClasses}>
       {children}
-      <button className="btn btn-primary" onClick={() => toast('clicked')}>Click</button>
       <ToastContainer />
     </main>
   </>
