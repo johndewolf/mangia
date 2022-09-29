@@ -5,7 +5,7 @@ function login({
 } = {}) {
   cy.then(() => ({ email })).as("user");
   cy.exec(
-    `npx ts-node --require tsconfig-paths/register ./cypress/support/create-user.ts "${email}"`
+    `npx ./cypress/support/create-user.js "${email}"`
   ).then(({ stdout }) => {
     const cookieValue = stdout
       .replace(/.*<cookie>(?<cookieValue>.*)<\/cookie>.*/s, "$<cookieValue>")
@@ -18,20 +18,21 @@ function login({
 function cleanupUser({ email } = {}) {
   if (email) {
     deleteUserByEmail(email);
-  } else {
-    cy.get("@user").then((user) => {
-      const email = user.email;
-      if (email) {
-        deleteUserByEmail(email);
-      }
-    });
   }
+  // else {
+  //   cy.get("@user").then((user) => {
+  //     const email = user.email;
+  //     if (email) {
+  //       deleteUserByEmail(email);
+  //     }
+  //   });
+  // }
   cy.clearCookie("__session");
 }
 
 function deleteUserByEmail(email) {
   cy.exec(
-    `npx ts-node --require tsconfig-paths/register ./cypress/support/delete-user.ts "${email}"`
+    `npx ./cypress/support/delete-user.js "${email}"`
   );
 
   cy.clearCookie("__session");

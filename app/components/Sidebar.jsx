@@ -42,7 +42,7 @@ const Sidebar = ({children}) => {
             <Fragment>
               <li>
                 <Link to="/login" className={menuLinkClasses}>
-                  <HiArrowSmRight /><span className="ml-3">Login</span>
+                  <HiArrowSmRight /><span className="ml-3">Log in</span>
                 </Link>
               </li>
               <li>
