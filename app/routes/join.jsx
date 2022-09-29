@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
-
+import Layout from "~/components/Layout";
 import { getUserId, createUserSession } from "~/session.server";
 
 import { createUser, getUserByEmail, getUserByUsername } from "~/models/user.server";
@@ -91,7 +91,7 @@ export default function Join() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col justify-center bg-cyan-100 items-center">
+    <Layout mainClasses="flex min-h-screen w-full flex-col justify-center bg-cyan-100 items-center">
       <div className="card w-96 bg-base-100 shadow-xl">
         <div className="card-body">
           <Form method="post">
@@ -133,7 +133,6 @@ export default function Join() {
                 ref={usernameRef}
                 id="username"
                 required
-                autoFocus={true}
                 name="username"
                 type="username"
                 autoComplete="username"
@@ -200,6 +199,6 @@ export default function Join() {
           </Form>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }

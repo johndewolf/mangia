@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
-
+import Layout from "../components/Layout"
 import { createUserSession, getUserId } from "~/session.server";
 import { verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
@@ -75,7 +75,7 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col justify-center bg-cyan-100 items-center">
+    <Layout mainClasses="flex min-h-screen w-full flex-col justify-center bg-cyan-100 items-center">
       <div className="card w-96 bg-base-100 shadow-xl">
         <div className="card-body">
         <Form method="post">
@@ -173,6 +173,6 @@ export default function LoginPage() {
         </Form>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }

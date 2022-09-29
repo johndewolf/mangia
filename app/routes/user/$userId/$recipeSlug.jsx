@@ -1,5 +1,6 @@
 import { json } from "@remix-run/node";
 import invariant from "tiny-invariant";
+import { getUserByUsername } from "~/models/user.server.js"
 import { createRecipeCheckInByUser, getRecipeBySlug, getRecipeCheckInsByUser } from "~/models/recipe.server";
 import { getCollectionsByUser,createCollection, getCollectionWithRecipeByUser, deleteCollectionRecipeConnection, createCollectionRecipeConnection } from '~/models/collection.server'
 import { Link, useLoaderData, useFetcher, useActionData } from "@remix-run/react";
@@ -9,7 +10,6 @@ import { getSession, sessionStorage, getUser } from "~/session.server";
 import { HiOutlineCheckCircle, HiOutlineBookmark } from "react-icons/hi";
 import { formatDate } from "~/utils";
 import AddCollectionDrawer from "~/components/AddToCollectionDrawer";
-
 import slugify from "slugify";
 
 export const action = async({request, params}) => {
@@ -66,18 +66,26 @@ export const action = async({request, params}) => {
 
 export const loader = async ({ request, params }) => {
   invariant(params.recipeSlug, "recipe slug not found");
-  const user = await getUser(request);
+  const user = await getUserByUsername(params.userId);
+  const currentUser = await getUser(request);
   const recipe = await getRecipeBySlug({ slug: params.recipeSlug });
-  const userCheckIns = await getRecipeCheckInsByUser({recipeId: recipe.id, userId: user?.id})
+  let returnData = { user, recipe }
+
+  if (currentUser) {
+    const userCheckIns = await getRecipeCheckInsByUser({recipeId: recipe.id, userId: user?.id})
+    const collections = await getCollectionsByUser(user.username)
+
+    returnData = {...returnData, userCheckIns, collections, currentUser}
+  }
+  
   const session = await getSession(request);
   const message = session.get("globalMessage") || null;
-  const collections = await getCollectionsByUser(user.username)
+  returnData = {...returnData, message}
   if (!recipe) {
     throw new Response("Not Found", { status: 404 });
   }
-  
   return json(
-    { user, recipe, message, userCheckIns, collections},
+    returnData,
     {
       headers: {
         "Set-Cookie": await sessionStorage.commitSession(session)
@@ -86,62 +94,57 @@ export const loader = async ({ request, params }) => {
   );
 };
 export default function UserRecipeDetailsPage() {
-  const {user, recipe, message, userCheckIns, collections} = useLoaderData();
+  const {currentUser, user, recipe, message, userCheckIns, collections} = useLoaderData();
   const actionData = useActionData()
   const actionMessage  = actionData?.message || null
   const [ showModal, setShowModal ] = useState(false)
   const date = formatDate(recipe.createdAt)
   return (
     <Layout mainClasses="drawer drawer-end" message={message || actionMessage}>
-        <input id="my-drawer" type="checkbox" className="drawer-toggle" checked={showModal} readOnly />
-        <div className="drawer-content">  
-          <div style={{maxWidth: '62rem'}} className="p-8">
-            <div className="text-sm breadcrumbs mb-8">
-              <ul>
-                <li><Link to="/user">All Users</Link></li> 
-                <li><Link to={`/user/${recipe.user.username}`}>{recipe.user.username}</Link></li> 
-                <li>{recipe.title}</li>
-              </ul>
-            </div>
-            <div className="flex items-center">
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold">{recipe.title}</h1>
-                <h2 className="text-lg mt-4">Created By <Link to={`/user/${recipe.user.username}`} className="text-blue-400 underline">{recipe.user.username}</Link> on {date}</h2>
-              </div>
-
-              
-            </div>
-            {user && 
-              <UserActionButtons userCheckIns={userCheckIns} setShowModal={setShowModal}  />
-            }
-            <hr className="my-4" />
-            <ul className="ml-8 list-disc">
-            {recipe.ingredients.map((ingredient) => (<li key={ingredient.id}>{ingredient.quantity} {ingredient.metric} {ingredient.body}</li>))}
+      <input id="my-drawer" type="checkbox" className="drawer-toggle" checked={showModal} readOnly />
+      <div className="drawer-content">  
+        <div style={{maxWidth: '62rem'}} className="p-8">
+          <div className="text-sm breadcrumbs mb-8">
+            <ul>
+              <li><Link to="/user">All Users</Link></li> 
+              <li><Link to={`/user/${recipe.user.username}`}>{recipe.user.username}</Link></li> 
+              <li>{recipe.title}</li>
             </ul>
-            {recipe?.steps.length > 0 &&
-            <>
-              <hr className="my-4" />
-              <ol className="ml-8 list-decimal">
-                {recipe.steps.map((step) => (<li key={step.id} className="mt-4">{step.body}</li>))}
-              </ol>
-            </>
-            }
           </div>
+          <div className="flex items-center">
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold">{recipe.title}</h1>
+              <h2 className="text-lg mt-4">Created By <Link to={`/user/${recipe.user.username}`} className="text-blue-400 underline">{recipe.user.username}</Link> on {date}</h2>
+            </div>
+          </div>
+          {currentUser && 
+            <UserActionButtons userCheckIns={userCheckIns} setShowModal={setShowModal}  />
+          }
+          <hr className="my-4" />
+          <ul className="ml-8 list-disc">
+          {recipe.ingredients.map((ingredient) => (<li key={ingredient.id}>{ingredient.quantity} {ingredient.metric} {ingredient.body}</li>))}
+          </ul>
+          {recipe?.steps.length > 0 &&
+          <>
+            <hr className="my-4" />
+            <ol className="ml-8 list-decimal">
+              {recipe.steps.map((step) => (<li key={step.id} className="mt-4">{step.body}</li>))}
+            </ol>
+          </>
+          }
         </div>
-        <div className="drawer-side">
-          <label htmlFor="my-drawer" onClick={()=> setShowModal(false)} className="drawer-overlay"></label>
-          <AddCollectionDrawer showModal={showModal} setShowModal={setShowModal} collections={collections} recipe={recipe} />
-        </div>
-
+      </div>
+      <div className="drawer-side">
+        <label htmlFor="my-drawer" onClick={()=> setShowModal(false)} className="drawer-overlay"></label>
+        <AddCollectionDrawer showModal={showModal} setShowModal={setShowModal} collections={collections} recipe={recipe} />
+      </div>
     </Layout>
   );
 }
 
-
 const UserActionButtons = ({userCheckIns, setShowModal}) => {
   const fetcher = useFetcher();
-  const checkInClicked = userCheckIns.length > 0;
-  const pluralTimes = `time${userCheckIns.length > 1 ? 's' : ''}`
+  const pluralTimes = `time${userCheckIns?.length > 1 ? 's' : ''}`
   return (
   <div className="mt-4 flex gap-4 justify-between">
     
@@ -150,14 +153,13 @@ const UserActionButtons = ({userCheckIns, setShowModal}) => {
         <button className="btn btn-ghost btn-circle text-primary text-xl" type="submit">
           <HiOutlineCheckCircle />
         </button>
-        <p>You've made this recipe {userCheckIns.length} {pluralTimes}</p>
+        <p>You've made this recipe {userCheckIns?.length} {pluralTimes}</p>
       </div>
       </fetcher.Form>
     
     <button className="btn btn-ghost btn-circle text-primary text-xl" type="submit" onClick={() => setShowModal(true)}>
       <HiOutlineBookmark className="font" />
     </button>
-
   </div>
   )
 }
