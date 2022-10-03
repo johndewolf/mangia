@@ -94,7 +94,7 @@ export const loader = async ({ request, params }) => {
   );
 };
 export default function UserRecipeDetailsPage() {
-  const {currentUser, user, recipe, message, userCheckIns, collections} = useLoaderData();
+  const {currentUser, recipe, message, userCheckIns, collections} = useLoaderData();
   const actionData = useActionData()
   const actionMessage  = actionData?.message || null
   const [ showModal, setShowModal ] = useState(false)
