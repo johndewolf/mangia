@@ -72,8 +72,8 @@ export const loader = async ({ request, params }) => {
   let returnData = { user, recipe }
 
   if (currentUser) {
-    const userCheckIns = await getRecipeCheckInsByUser({recipeId: recipe.id, userId: user?.id})
-    const collections = await getCollectionsByUser(user.username)
+    const userCheckIns = await getRecipeCheckInsByUser({recipeId: recipe.id, userId: currentUser.id})
+    const collections = await getCollectionsByUser(currentUser.username)
 
     returnData = {...returnData, userCheckIns, collections, currentUser}
   }
@@ -94,7 +94,7 @@ export const loader = async ({ request, params }) => {
   );
 };
 export default function UserRecipeDetailsPage() {
-  const {currentUser, user, recipe, message, userCheckIns, collections} = useLoaderData();
+  const {currentUser, recipe, message, userCheckIns, collections} = useLoaderData();
   const actionData = useActionData()
   const actionMessage  = actionData?.message || null
   const [ showModal, setShowModal ] = useState(false)
@@ -144,7 +144,7 @@ export default function UserRecipeDetailsPage() {
 
 const UserActionButtons = ({userCheckIns, setShowModal}) => {
   const fetcher = useFetcher();
-  const pluralTimes = `time${userCheckIns?.length > 1 ? 's' : ''}`
+  const pluralTimes = `time${userCheckIns?.length > 1 || userCheckIns.length === 0 ? 's' : ''}`
   return (
   <div className="mt-4 flex gap-4 justify-between">
     

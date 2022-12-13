@@ -2,6 +2,7 @@ import Layout from "~/components/Layout";
 import invariant from "tiny-invariant";
 import { getRecipesByUser, deleteRecipe } from '~/models/recipe.server.js'
 import { getUserByUsername, getUserCheckIns } from '~/models/user.server.js'
+import { deleteCollection } from "~/models/collection.server";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useFetcher, useParams, useCatch } from "@remix-run/react";
 import { getUser, getSession, sessionStorage } from "~/session.server.js"
@@ -27,17 +28,29 @@ export const loader = async ({ request, params }) => {
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
-  console.log('hit actions')
   const recipeId = formData.get("recipeId");
-  const session = await getSession(request)
-  session.flash(
-    "globalMessage",
-    "Recipe deleted"
-  );
-  await deleteRecipe(recipeId);
-  return json({message: `Recipe Deleted`, status: 200}, {headers: {
-    "Set-Cookie": await sessionStorage.commitSession(session),
-  }})
+  const collectionId = formData.get("collectionId");
+  const session = await getSession(request);
+  if (recipeId) {
+    session.flash(
+      "globalMessage",
+      "Recipe deleted"
+    );
+    await deleteRecipe(recipeId);
+    return json({message: `Recipe Deleted`, status: 200}, {headers: {
+      "Set-Cookie": await sessionStorage.commitSession(session),
+    }})
+  }
+  if (collectionId) {
+    session.flash(
+      "globalMessage",
+      "Collection deleted"
+    );
+    await deleteCollection(collectionId);
+    return json({message: `Collection Deleted`, status: 200}, {headers: {
+      "Set-Cookie": await sessionStorage.commitSession(session),
+    }})
+  }
 };
 
 const noRecipesMessage = (isUser, username) => {
@@ -126,25 +139,8 @@ export default function UserDetailPage() {
         {collections && collections.length > 0 ?
         <div className="flex flex-row flex-wrap mt-4 gap-4">
         {collections.map(collection => (
-          <div className="card w-96 bg-base-100 shadow-xl card-bordered" key={collection.id}>
-            <div className="card-body">
-
-                <div className="card-title mb-4">
-                  {collection.title}
-                </div>
-
-              { collection.recipes && collection.recipes.length > 0 ?
-              <ul className="pl-4 list-disc  divide-y divide-gray-200 dark:divide-gray-700">
-              {collection.recipes.map(recipe => (
-                <li key={`collection-${recipe.recipe.id}`}><Link className="link" to={`/user/${recipe.recipe.user.username}/${recipe.recipe.slug}`}>{recipe.recipe.title}</Link></li>
-              ))}
-              </ul>
-                : <p className="italic">Collection has no recipes</p> }
-
-            </div>
-          </div>
-
-          ))}
+          <CollectionItem collection={collection} user={user} key={collection.id} />
+        ))}
           </div>
         :
           <p>No collections yet!</p>
@@ -155,9 +151,56 @@ export default function UserDetailPage() {
 }
 
 
+const CollectionItem = ({collection, user}) => {
+  const fetcher = useFetcher();
+  const username = user?.username;
+  const isUser = collection.user.username === username;
+
+  return (
+    <div className="card w-96 bg-base-100 shadow-xl card-bordered" key={collection.id}>
+      <div className="card-body">
+        <div className="card-title mb-4 flex justify-between">
+          <h3>{collection.title}</h3>
+          {isUser && 
+          <div className="dropdown dropdown-left">
+            <label tabIndex={0} className="btn btn-ghost m-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                <path fillRule="evenodd" d="M10.5 6a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm0 6a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm0 6a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" clipRule="evenodd" />
+              </svg>
+            </label>
+            <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+              <li>
+                <fetcher.Form replace method="post">
+                  <button
+                      type="submit"
+                      value={collection.id}
+                      name="collectionId"
+                      className="block w-full text-sm text-red-600"
+                    >
+                      Delete Collection
+                  </button>
+                </fetcher.Form>
+              </li>
+            </ul>
+          </div>
+          }
+        </div>
+        { collection.recipes && collection.recipes.length > 0 ?
+        <ul className="pl-4 list-disc  divide-y divide-gray-200 dark:divide-gray-700">
+        {collection.recipes.map(recipe => (
+          <li key={`collection-${recipe.recipe.id}`}><Link className="link" to={`/user/${recipe.recipe.user.username}/${recipe.recipe.slug}`}>{recipe.recipe.title}</Link></li>
+        ))}
+        </ul>
+          : <p className="italic">Collection has no recipes</p> }
+      </div>
+    </div>
+  )
+}
+
+
 const RecipeItem = ({recipe, user}) => {
   const fetcher = useFetcher();
-  const username = user?.username
+  const username = user?.username;
   const isUser = recipe.user.username === username;
   return (
     <div className="card w-96 bg-base-100 shadow-xl card-bordered">
