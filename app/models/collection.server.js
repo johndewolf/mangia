@@ -39,6 +39,7 @@ export function getCollectionsByUser(username) {
       id: true,
       title: true,
       slug: true,
+      user: true,
       recipes: {
         select: {
           recipe: {
@@ -74,6 +75,7 @@ export function deleteCollectionRecipeConnection(collectionId, recipeId) {
 }
 
 export function getCollectionWithRecipeByUser(userId, recipeId) {
+  console.log(userId)
   return prisma.collection.findMany({
     where: { user: {id: userId}, recipes: { some: {recipe: {id: recipeId  } }}},
     orderBy: {
@@ -105,4 +107,10 @@ export function createCollectionRecipeConnection(collectionId, recipeId) {
       recipeId
     }
   })
+}
+
+export function deleteCollection(id) {
+  return prisma.collection.deleteMany({
+    where: { id },
+  });
 }
