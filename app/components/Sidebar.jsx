@@ -1,7 +1,7 @@
 import { Link, Form, useLocation } from "@remix-run/react"
 import { Fragment } from "react";
 import { useOptionalUser } from "../utils";
-import { HiArrowSmDown, HiArrowSmUp, HiArrowSmRight, HiOutlineViewBoards, HiUser, HiUsers }  from "react-icons/hi"
+import { HiLogout, HiArrowSmUp, HiArrowSmRight, HiOutlineViewBoards, HiUser, HiUsers }  from "react-icons/hi"
 
 const Sidebar = ({children}) => {
   const { pathname } = useLocation();
@@ -33,7 +33,7 @@ const Sidebar = ({children}) => {
               <li>
                 <Form action="/logout" method="post">
                   <button type="submit" className={menuLinkClasses}>
-                    <HiArrowSmDown /><span className="ml-3">Logout</span>
+                    <HiLogout /><span className="ml-3">Logout</span>
                   </button>
                 </Form>
               </li>
