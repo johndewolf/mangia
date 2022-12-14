@@ -2,13 +2,12 @@ import Layout from "~/components/Layout";
 import invariant from "tiny-invariant";
 import { getRecipesByUser, deleteRecipe } from '~/models/recipe.server.js'
 import { getUserByUsername, getUserCheckIns } from '~/models/user.server.js'
-import { deleteCollection } from "~/models/collection.server";
+import { deleteCollection, getCollectionsByUser } from "~/models/collection.server";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useFetcher, useParams, useCatch } from "@remix-run/react";
 import { getUser, getSession, sessionStorage } from "~/session.server.js"
 import { formatDate } from "~/utils"
 
-import { getCollectionsByUser } from '~/models/collection.server'
 export const loader = async ({ request, params }) => {
   invariant(params.userId, "userId not found");
   const user = await getUser(request);
@@ -186,7 +185,7 @@ const CollectionItem = ({collection, user}) => {
           }
         </div>
         { collection.recipes && collection.recipes.length > 0 ?
-        <ul className="pl-4 list-disc  divide-y divide-gray-200 dark:divide-gray-700">
+        <ul className="pl-4 list-disc">
         {collection.recipes.map(recipe => (
           <li key={`collection-${recipe.recipe.id}`}><Link className="link" to={`/user/${recipe.recipe.user.username}/${recipe.recipe.slug}`}>{recipe.recipe.title}</Link></li>
         ))}

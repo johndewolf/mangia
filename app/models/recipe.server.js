@@ -122,17 +122,9 @@ export function createRecipe({  title, ingredients, userId, steps, slug }) {
 }
 
 export function getIngredientSuggestion(ingredients) {
-  // return openai.createEdit(
-  //   "text-davinci-edit-001", {
-  //     instruction: "What is the next ingredient?",
-  //     input: "cheese better garlic"
-  //     timeout
-  //   }
-  // );
-  return instance.post('/edits',
+  return instance.post('/completions',
     {
-      model: "text-davinci-edit-001",
-      instruction: "What is the next ingredient?",
-      input: ingredients
+      model: "text-davinci-003",
+      prompt: `Give a single ingredient that would be used in a recipe with ${ingredients}`,
     })
 }
