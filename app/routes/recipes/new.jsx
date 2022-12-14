@@ -1,6 +1,6 @@
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useSubmit } from "@remix-run/react";
-import * as React from "react";
+import {useEffect, useState, useRef} from "react";
 import Layout from '~/components/Layout'
 
 import { createRecipe, getRecipeBySlug, getIngredientSuggestion } from "~/models/recipe.server";
@@ -74,16 +74,16 @@ export const action = async ({ request }) => {
 export default function NewRecipe() {
   const actionData = useActionData();
   const submit = useSubmit()
-  const titleRef = React.useRef(null);
-  const formRef = React.useRef(null);
-  const ingredientRefs = React.useRef([])
-  const stepRefs = React.useRef([])
+  const titleRef = useRef(null);
+  const formRef = useRef(null);
+  const ingredientRefs = useRef([])
+  const stepRefs = useRef([])
   
-  const [ steps, updateSteps ] = React.useState([0]);
-  const [ ingredients, updateIngredients ] = React.useState([{key: 0, metric: '', quantity: '', body: ''}]);
+  const [ steps, updateSteps ] = useState([0]);
+  const [ ingredients, updateIngredients ] = useState([{key: 0, metric: '', quantity: '', body: ''}]);
 
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (actionData?.errors?.title) {
       titleRef.current?.focus();
     }
@@ -93,12 +93,12 @@ export default function NewRecipe() {
     }
   }, [actionData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     ingredientRefs.current[ingredients.length - 1].focus()
   }, [ingredients])
 
 
-  React.useEffect(() => {
+  useEffect(() => {
     stepRefs.current[steps.length - 1].focus()
   }, [steps])
   
@@ -118,12 +118,10 @@ export default function NewRecipe() {
     updateIngredients(
       [...ingredients,
         {key: nextKey, metric: '', quantity: '', body: ''}
-      ])
-
-      console.log(ingredients)
+      ]
+    )
     if (ingredients.length > 1) {
       const formData = new FormData(formRef.current)
-      console.log('submitting')
       formData.append('isGetSuggestion', true)
       submit(formData, {replace: true, method: "post",})
     }

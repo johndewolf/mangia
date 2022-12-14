@@ -186,7 +186,7 @@ const CollectionItem = ({collection, user}) => {
           }
         </div>
         { collection.recipes && collection.recipes.length > 0 ?
-        <ul className="pl-4 list-disc  divide-y divide-gray-200 dark:divide-gray-700">
+        <ul className="pl-4 list-disc">
         {collection.recipes.map(recipe => (
           <li key={`collection-${recipe.recipe.id}`}><Link className="link" to={`/user/${recipe.recipe.user.username}/${recipe.recipe.slug}`}>{recipe.recipe.title}</Link></li>
         ))}
