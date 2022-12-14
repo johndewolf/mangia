@@ -2,16 +2,23 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useSubmit } from "@remix-run/react";
 import {useEffect, useState, useRef} from "react";
 import Layout from '~/components/Layout'
-
 import { createRecipe, getRecipeBySlug, getIngredientSuggestion } from "~/models/recipe.server";
 import { getUser, sessionStorage, getSession } from "~/session.server";
 import slugify from "slugify";
 import { HiX } from 'react-icons/hi'
 
-export const action = async ({ request }) => {
-  console.log('hit action')
+export const loader = async ({ request, params }) => {
   const user = await getUser(request);
+  console.log(user)
+  if (!user) {
+    return redirect('/login')
+  }
+  return null;
+}
 
+
+export const action = async ({ request }) => {
+  const user = await getUser(request);
   const formData = await request.formData();
   const title = formData.get("title");
   const isGetSuggestion = formData.get("isGetSuggestion");
