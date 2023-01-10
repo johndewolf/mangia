@@ -91,19 +91,8 @@ jobs:
         with:
           useLockFile: false
 
-      - name: 🛠 Setup Dev Database
-        if: ${{ github.ref != 'refs/heads/main' }}
+      - name: 🛠 Setup Database
         run: npx prisma migrate reset --force
-        env:
-          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
-          SHADOW_DATABASE_URL: ${{ secrets.DEV_SHADOW_DATABASE_URL }}
-
-      - name: 🛠 Setup Prod Database
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: npx prisma migrate reset --force
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SHADOW_DATABASE_URL: ${{ secrets.SHADOW_DATABASE_URL }}
 
       - name: ⚙️ Build
         run: npm run build
