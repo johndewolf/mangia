@@ -60,18 +60,6 @@ jobs:
     name: ⚫️ Cypress
     runs-on: ubuntu-latest
     steps:
-      - name: Configuration for main branch
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> $GITHUB_ENV
-          echo "SHADOW_DATABASE_URL=${{ secrets.SHADOW_DATABASE_URL }}" >> $GITHUB_ENV
-
-      - name: Configuration for non-main branch
-        if: ${{ github.ref != 'refs/heads/main' }}
-        run: |
-          echo "DATABASE_URL=${{ secrets.DEV_DATABASE_URL }}" >> $GITHUB_ENV
-          echo "SHADOW_DATABASE_URL=${{ secrets.DEV_SHADOW_DATABASE_URL }}" >> $GITHUB_ENV
-
       - name: 🛑 Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.9.1
 
@@ -135,7 +123,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
       - name: 🔑 Fly Registry Auth
         uses: docker/login-action@v2
         with:
@@ -163,7 +150,6 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
@@ -192,8 +178,6 @@ jobs:
           args: "deploy --app ${{ steps.app_name.outputs.value }}-staging --image registry.fly.io/${{ steps.app_name.outputs.value }}:${{ github.ref_name }}-${{ github.sha }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
-          SHADOW_DATABASE_URL: ${{ secrets.DEV_SHADOW_DATABASE_URL }}
 
       - name: 🚀 Deploy Production
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -202,5 +186,3 @@ jobs:
           args: "deploy --image registry.fly.io/${{ steps.app_name.outputs.value }}:${{ github.ref_name }}-${{ github.sha }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SHADOW_DATABASE_URL: ${{ secrets.SHADOW_DATABASE_URL }}
