@@ -123,7 +123,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-
       - name: 🔑 Fly Registry Auth
         uses: docker/login-action@v2
         with:
@@ -151,7 +150,6 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-latest

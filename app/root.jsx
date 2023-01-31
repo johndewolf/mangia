@@ -17,7 +17,7 @@ export const links = () => {
 
 export const meta = () => ({
   charset: "utf-8",
-  title: "Remix Notes",
+  title: "Mangia: Create and Track Recipes",
   viewport: "width=device-width,initial-scale=1",
 });
 
