@@ -1,21 +1,7 @@
-import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
-
-import { getUserById } from "~/models/user.server";
-
+// import { getSession } from "./services/session.server";
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
-
-export const sessionStorage = createCookieSessionStorage({
-  cookie: {
-    name: "__session",
-    httpOnly: true,
-    maxAge: 60 * 60 * 24 * 30,
-    path: "/",
-    sameSite: "lax",
-    secrets: [process.env.SESSION_SECRET],
-    secure: process.env.NODE_ENV === "production",
-  },
-});
 
 const USER_SESSION_KEY = "userId";
 
@@ -25,19 +11,10 @@ export async function getSession(request) {
 }
 
 export async function getUserId(request) {
-  const session = await getSession(request);
+  const session = await getSession(request.headers.get("Cookie"));
   const userId = session.get(USER_SESSION_KEY);
+
   return userId;
-}
-
-export async function getUser(request) {
-  const userId = await getUserId(request);
-  if (userId === undefined) return null;
-
-  const user = await getUserById(userId);
-  if (user) return user;
-
-  throw await logout(request);
 }
 
 export async function requireUserId(
@@ -52,14 +29,6 @@ export async function requireUserId(
   return userId;
 }
 
-export async function requireUser(request) {
-  const userId = await requireUserId(request);
-
-  const user = await getUserById(userId);
-  if (user) return user;
-
-  throw await logout(request);
-}
 
 export async function createUserSession({
   request,
@@ -76,15 +45,6 @@ export async function createUserSession({
           ? 60 * 60 * 24 * 7 // 7 days
           : undefined,
       }),
-    },
-  });
-}
-
-export async function logout(request) {
-  const session = await getSession(request);
-  return redirect("/", {
-    headers: {
-      "Set-Cookie": await sessionStorage.destroySession(session),
     },
   });
 }

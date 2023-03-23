@@ -2,12 +2,12 @@ import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 import Layout from "../components/Layout"
-import { createUserSession, getUserId } from "~/session.server";
+import { getUser } from "~/services/session.server";
 import { verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
 
 export const loader = async ({ request }) => {
-  const userId = await getUserId(request);
+  const userId = await getUser(request);
   if (userId) return redirect("/");
   return json({});
 };
@@ -45,12 +45,13 @@ export const action = async ({ request }) => {
   }
 
   const redirectTo = safeRedirect(formData.get("redirectTo"), `/user/${user.username}`);
-  return createUserSession({
-    request,
-    userId: user.id,
-    remember: remember === "on" ? true : false,
-    redirectTo,
-  });
+  return redirectTo;
+  // return createUserSession({
+  //   request,
+  //   userId: user.id,
+  //   remember: remember === "on" ? true : false,
+  //   redirectTo,
+  // });
 };
 
 export const meta = () => {
@@ -78,7 +79,7 @@ export default function LoginPage() {
     <Layout mainClasses="flex min-h-screen w-full flex-col justify-center bg-cyan-100 items-center">
       <div className="card w-96 bg-base-100 shadow-xl">
         <div className="card-body">
-        <Form method="post">
+          <Form method="post">
           <div>
             <label
               htmlFor="email"
@@ -169,8 +170,10 @@ export default function LoginPage() {
                 Sign up
               </Link>
             </div>
-
-        </Form>
+          </Form>
+          <Form action="/auth/auth0" method="post">
+            <button>Login with Auth0</button>
+          </Form>
         </div>
       </div>
     </Layout>

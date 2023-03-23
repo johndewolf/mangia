@@ -6,7 +6,7 @@ import { getCollectionsByUser,createCollection, getCollectionWithRecipeByUser, d
 import { Link, useLoaderData, useFetcher, useActionData } from "@remix-run/react";
 import { useState } from "react";
 import Layout from "~/components/Layout";
-import { getSession, sessionStorage, getUser } from "~/session.server";
+import { getSession, getUser, sessionStorage } from "~/services/session.server";
 import { HiOutlineCheckCircle, HiOutlineBookmark } from "react-icons/hi";
 import { formatDate } from "~/utils";
 import AddCollectionDrawer from "~/components/AddToCollectionDrawer";
@@ -54,7 +54,6 @@ export const action = async({request, params}) => {
       return json({message: `Collections updated`, status: 200})
     }
     catch (error) {
-      console.log(error)
       throw new Response("Big Error", { status: 500 });
     }
   }
@@ -78,7 +77,7 @@ export const loader = async ({ request, params }) => {
     returnData = {...returnData, userCheckIns, collections, currentUser}
   }
   
-  const session = await getSession(request);
+  const session = await getSession(request.headers.get("Cookie"));
   const message = session.get("globalMessage") || null;
   returnData = {...returnData, message}
   if (!recipe) {

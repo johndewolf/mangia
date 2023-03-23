@@ -3,13 +3,12 @@ import { Form, useActionData, useSubmit } from "@remix-run/react";
 import {useEffect, useState, useRef} from "react";
 import Layout from '~/components/Layout'
 import { createRecipe, getRecipeBySlug, getIngredientSuggestion } from "~/models/recipe.server";
-import { getUser, sessionStorage, getSession } from "~/session.server";
+import { getSession, sessionStorage, getUser } from "~/services/session.server";
 import slugify from "slugify";
 import { HiX } from 'react-icons/hi'
 
 export const loader = async ({ request, params }) => {
   const user = await getUser(request);
-  console.log(user)
   if (!user) {
     return redirect('/login')
   }
@@ -65,7 +64,7 @@ export const action = async ({ request }) => {
 
     const recipe = await createRecipe({ title, ingredients: Object.values(ingredients), steps, userId: user.id, slug: slugifyTitle });
   
-    const session = await getSession(request)
+    const session = await getSession(request.headers.get("Cookie"))
     session.flash(
       "globalMessage",
       `Recipe "${recipe.title}" successfully created`
