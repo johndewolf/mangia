@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { getUserByUsername } from "~/models/user.server.js"
-import { createRecipeCheckInByUser, getRecipeBySlug, getRecipeCheckInsByUser } from "~/models/recipe.server";
+import { createRecipeCheckInByUser, getRecipeBySlugAndUsername, getRecipeCheckInsByUser } from "~/models/recipe.server";
 import { getCollectionsByUser,createCollection, getCollectionWithRecipeByUser, deleteCollectionRecipeConnection, createCollectionRecipeConnection } from '~/models/collection.server'
 import { Link, useLoaderData, useFetcher, useActionData } from "@remix-run/react";
 import { useState } from "react";
@@ -25,7 +25,7 @@ export const action = async({request, params}) => {
     return json({message: `${collectionName} created successfully`, status: 200})
   }
   else if (addRecipeToCollections) {
-    const recipe = await getRecipeBySlug({ slug: params.recipeSlug });
+    const recipe = await getRecipeBySlugAndUsername( params.recipeSlug, params.userId );
     const selectedCollections = formData.getAll('collection-id')
     const allCollections = formData.get('all-collections').split(',');
     const collectionsWithRecipe = await getCollectionWithRecipeByUser(user.id, recipe.id)
@@ -67,7 +67,13 @@ export const loader = async ({ request, params }) => {
   invariant(params.recipeSlug, "recipe slug not found");
   const user = await getUserByUsername(params.userId);
   const currentUser = await getUser(request);
-  const recipe = await getRecipeBySlug({ slug: params.recipeSlug });
+  const recipe = await getRecipeBySlugAndUsername( params.recipeSlug, params.userId );
+
+  if (!recipe) {
+    throw new Response("Not Found", {
+      status: 404
+    });
+  }
   let returnData = { user, recipe }
 
   if (currentUser) {
@@ -146,16 +152,15 @@ const UserActionButtons = ({userCheckIns, setShowModal}) => {
   const pluralTimes = `time${userCheckIns?.length > 1 || userCheckIns.length === 0 ? 's' : ''}`
   return (
   <div className="mt-4 flex gap-4 justify-between">
-    
-      <fetcher.Form replace method="post">
+    <fetcher.Form replace method="post">
       <div className="flex items-center">
         <button className="btn btn-ghost btn-circle text-primary text-xl" type="submit">
           <HiOutlineCheckCircle />
         </button>
         <p>You've made this recipe {userCheckIns?.length} {pluralTimes}</p>
       </div>
-      </fetcher.Form>
-    
+    </fetcher.Form>
+  
     <button className="btn btn-ghost btn-circle text-primary text-xl" type="submit" onClick={() => setShowModal(true)}>
       <HiOutlineBookmark className="font" />
     </button>

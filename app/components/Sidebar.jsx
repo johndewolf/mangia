@@ -40,14 +40,14 @@ const Sidebar = ({children}) => {
             :
             <Fragment>
               <li>
-                <Link to="/login" className={menuLinkClasses}>
-                  <HiArrowSmRight /><span className="ml-3">Log in</span>
-                </Link>
+                <Form action="/auth/auth0" method="post" className={menuLinkClasses}>
+                  <button className="flex items-center"><HiArrowSmRight /><span className="ml-3">Log in</span></button>
+                </Form>
               </li>
               <li>
-                <Link to="/join" className={menuLinkClasses}>
-                  <HiArrowSmUp /><span className='ml-3'>Sign up</span>
-                </Link>
+                <Form action="/auth/auth0?screen_hint=signup" method="post" className={menuLinkClasses}>
+                  <button className="flex items-center"><HiArrowSmUp /><span className="ml-3">Sign Up</span></button>
+                </Form>
               </li>
             </Fragment> 
           }

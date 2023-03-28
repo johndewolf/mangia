@@ -30,7 +30,7 @@ export const action = async ({ request }) => {
   const formData = await request.formData();
   const recipeId = formData.get("recipeId");
   const collectionId = formData.get("collectionId");
-  const session = await getSession(request);
+  const session = await getSession(request.headers.get("Cookie"));
   if (recipeId) {
     session.flash(
       "globalMessage",

@@ -17,7 +17,6 @@ export async function getUser(request) {
   const user = await authenticator.isAuthenticated(request)
   if (user) return user;
   return undefined;
-  // throw await logout(request);
 }
 
 export async function logout(request) {

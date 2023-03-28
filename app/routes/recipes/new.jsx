@@ -10,7 +10,7 @@ import { HiX } from 'react-icons/hi'
 export const loader = async ({ request, params }) => {
   const user = await getUser(request);
   if (!user) {
-    return redirect('/login')
+    return redirect('/')
   }
   return null;
 }

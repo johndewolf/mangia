@@ -1,13 +1,10 @@
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getRecipes } from '~/models/recipe.server.js'
-import { findOrCreateUser } from "~/models/user.server";
 import Layout from "../../components/Layout";
 
 export const loader = async({request}) => {
   const recipes = await getRecipes();
-  const userCreated = await findOrCreateUser('jdewolf06+3@gmail.com', 'username101')
-  console.log(userCreated)
   return json({ recipes });
 }
 
