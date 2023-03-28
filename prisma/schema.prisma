@@ -14,18 +14,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  password    Password?
   notes       Note[]
   recipes     Recipe[]
   checkIns    CheckIn[]
   collections Collection[]
-}
-
-model Password {
-  hash String
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
 }
 
 model Recipe {
@@ -72,7 +64,7 @@ model Collection {
 model RecipeOnCollection {
   recipe       Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   recipeId     String
-  collection   Collection @relation(fields: [collectionId], references: [id])
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   collectionId String
 
   @@id([recipeId, collectionId])

@@ -5,7 +5,8 @@ import { getUserByUsername, getUserCheckIns } from '~/models/user.server.js'
 import { deleteCollection, getCollectionsByUser } from "~/models/collection.server";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useFetcher, useParams, useCatch } from "@remix-run/react";
-import { getUser, getSession, sessionStorage } from "~/session.server.js"
+
+import { getUser, sessionStorage, getSession } from "~/services/session.server.js"
 import { formatDate } from "~/utils"
 
 export const loader = async ({ request, params }) => {
@@ -15,7 +16,7 @@ export const loader = async ({ request, params }) => {
   if (!pageUser) {
     throw new Response("Not Found", { status: 404 });
   }
-  const session = await getSession(request);
+  const session = await getSession(request.headers.get("Cookie"));
   const message = session.get("globalMessage") || null;
   const recipes = await getRecipesByUser({ username: params.userId });
   const checkIns = await getUserCheckIns({userId: pageUser.id})
@@ -29,7 +30,7 @@ export const action = async ({ request }) => {
   const formData = await request.formData();
   const recipeId = formData.get("recipeId");
   const collectionId = formData.get("collectionId");
-  const session = await getSession(request);
+  const session = await getSession(request.headers.get("Cookie"));
   if (recipeId) {
     session.flash(
       "globalMessage",

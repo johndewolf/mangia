@@ -38,6 +38,22 @@ export function getRecipeBySlug(slug) {
   });
 }
 
+export function getRecipeBySlugAndUsername(slug, username) {
+  return prisma.recipe.findFirst({
+    where: {
+      user: {
+        username
+      },
+      slug: slug
+    },
+    include: {
+      ingredients: true,
+      steps: true,
+      user: true
+    }
+  });
+}
+
 
 export function getRecipeByUser(userId) {
   return prisma.recipe.findFirst({

@@ -3,9 +3,8 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { getRecipes } from '~/models/recipe.server.js'
 import Layout from "../../components/Layout";
 
-export const loader = async() => {
+export const loader = async({request}) => {
   const recipes = await getRecipes();
-
   return json({ recipes });
 }
 

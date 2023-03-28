@@ -9,7 +9,8 @@ import {
 } from "@remix-run/react";
 import toastCSS from 'react-toastify/dist/ReactToastify.css'
 import tailwindStylesheetUrl from "./styles/tailwind.css";
-import { getUser } from "./session.server";
+
+import { authenticator } from "./services/auth.server";
 
 export const links = () => {
   return [{ rel: "stylesheet", href: tailwindStylesheetUrl }, {rel: "stylesheet", href: toastCSS}];
@@ -22,8 +23,9 @@ export const meta = () => ({
 });
 
 export const loader = async ({ request }) => {
+  const user = await authenticator.isAuthenticated(request);
   return json({
-    user: await getUser(request),
+    user: user,
   });
 };
 
