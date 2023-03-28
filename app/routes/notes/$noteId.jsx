@@ -3,7 +3,7 @@ import { Form, useCatch, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 
 import { getNote, deleteNote } from "~/models/note.server";
-import { requireUserId } from "~/session.server";
+import { requireUserId } from "~/services/session.server";
 
 export const loader = async ({ request, params }) => {
   const userId = await requireUserId(request);

@@ -21,20 +21,28 @@ export function getUsers() {
   });
 }
 
-export async function createUser(email, password, username) {
-  const hashedPassword = await bcrypt.hash(password, 10);
-
+export async function createUser(email, username) {
   return prisma.user.create({
     data: {
       email,
       username,
-      password: {
-        create: {
-          hash: hashedPassword,
-        },
-      },
     },
   });
+}
+
+export async function findOrCreateUser(email, username) {
+  return prisma.user.upsert({
+    where: {
+      email: email
+    },
+    update: {
+      username: username
+    },
+    create: {
+      email: email,
+      username: username
+    }
+  })
 }
 
 export async function deleteUserByEmail(email) {

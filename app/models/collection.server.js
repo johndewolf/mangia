@@ -75,7 +75,6 @@ export function deleteCollectionRecipeConnection(collectionId, recipeId) {
 }
 
 export function getCollectionWithRecipeByUser(userId, recipeId) {
-  console.log(userId)
   return prisma.collection.findMany({
     where: { user: {id: userId}, recipes: { some: {recipe: {id: recipeId  } }}},
     orderBy: {
