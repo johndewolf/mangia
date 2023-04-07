@@ -138,9 +138,14 @@ export function createRecipe({  title, ingredients, userId, steps, slug }) {
 }
 
 export function getIngredientSuggestion(ingredients) {
-  return instance.post('/completions',
+  return instance.post('/chat/completions',
     {
-      model: "text-davinci-003",
-      prompt: `Give a single ingredient that would be used in a recipe with ${ingredients}`,
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "user",
+          content: `Give a suggestion for 3 more ingredients that will be in a recipe that includes ${ingredients}. Do not include salt, pepper, or olive oil. Format the data in JSON like the following: {ingredient: butter, quantity: 1, unit: tablespoon}`
+        }
+      ]
     })
 }

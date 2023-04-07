@@ -7,6 +7,8 @@ import { getSession, sessionStorage, getUser } from "~/services/session.server";
 import slugify from "slugify";
 import { HiX } from 'react-icons/hi'
 
+import SuggestionAlert from "~/components/SuggestionAlert";
+
 export const loader = async ({ request, params }) => {
   const user = await getUser(request);
   if (!user) {
@@ -35,10 +37,17 @@ export const action = async ({ request }) => {
 
     if (key.indexOf('ingredient-') > -1) {
       const ingredientKeys = key.split('-');
+
+      // Shape of object { 0: { quantity: 1, metric: tablespoon, body: salt } }
       if (!ingredients[ingredientKeys[2]]) {
         ingredients[ingredientKeys[2]] = {}
       }
       ingredients[ingredientKeys[2]][ingredientKeys[1]] = value;
+
+      // if there is no body, then delete it from ingredients that will be saved
+      if (key.indexOf('ingredient-body') > -1 && value === ''){
+        delete ingredients[ingredientKeys[2]]
+      }
     }
   }
   if (isGetSuggestion && user) {
@@ -46,11 +55,17 @@ export const action = async ({ request }) => {
       const ingredientValues = Object.values(ingredients);
       const ingredientNames = ingredientValues.reduce((ingredientString, ingredient) => ingredientString += ` ${ingredient.quantity} ${ingredient.metric} ${ingredient.body}`, '')
       const aiResponse = await(getIngredientSuggestion(ingredientNames))
-      const firstChoice = aiResponse?.data?.choices[0]?.text;
-      return json({suggestion: firstChoice})
+      const firstChoice = aiResponse?.data?.choices[0]?.message.content;
+      let firstChoiceJSON
+      try {
+        firstChoiceJSON = JSON.parse(firstChoice)
+      } catch(e) {
+        console.error('Error parsing suggestion')
+      }
+      return json({suggestion: firstChoiceJSON[0]})
     } catch (e) {
       console.log(e)
-      return (json({errors: 'Problem getting suggestion'}))
+      return (json({errors: 'Error getting suggestion'}))
     }
   }
   else {
@@ -87,7 +102,7 @@ export default function NewRecipe() {
   
   const [ steps, updateSteps ] = useState([0]);
   const [ ingredients, updateIngredients ] = useState([{key: 0, metric: '', quantity: '', body: ''}]);
-
+  const [ showSuggestion, setShowSuggestion ] = useState(false)
 
   useEffect(() => {
     if (actionData?.errors?.title) {
@@ -95,6 +110,7 @@ export default function NewRecipe() {
     }
 
     if (actionData?.suggestion) {
+      setShowSuggestion(true)
       console.log(actionData?.suggestion)
     }
   }, [actionData]);
@@ -129,7 +145,7 @@ export default function NewRecipe() {
     if (ingredients.length > 1) {
       const formData = new FormData(formRef.current)
       formData.append('isGetSuggestion', true)
-      submit(formData, {replace: true, method: "post",})
+      submit(formData, {replace: true, method: "post"})
     }
   }
 
@@ -141,7 +157,6 @@ export default function NewRecipe() {
   return (
     <Layout>
       <div style={{maxWidth: '62rem'}}>
-        {actionData?.suggestion}
         <div className="card shadow-xl card-bordered">
           <div className="card-body">
             <h1 className="text-xl text-bold">Create Your Recipe</h1>
@@ -176,6 +191,7 @@ export default function NewRecipe() {
               <div className="mt-8">
                 <fieldset>
                   <legend className="label">Ingredients:</legend>
+                  
                   <datalist id="metric-list">
                     <option value="cups"/>
                     <option value="ounces"/>
@@ -186,7 +202,7 @@ export default function NewRecipe() {
                     <option value="handful"/>
                   </datalist>
                   {ingredients.map((ingr, index) => (
-                    <div className="flex mb-4" key={ingr.key}>
+                    <div className="flex mb-4 group" key={ingr.key}>
                       <input
                         type="number"
                         aria-label="ingredient quantity"
@@ -214,7 +230,7 @@ export default function NewRecipe() {
                       
                       <button
                       type="button"
-                      className="p-1 border rounded-full self-center ml-1 border-none"
+                      className="p-1 border rounded-full self-center ml-1 border-none opacity-0 group-hover:opacity-100 focus:opacity-100 active:opacity-100  transition-all"
                       disabled={ingredients.length < 2}
                       onClick={() => handleRemoveIngredient(ingr.key)}
                       >
@@ -223,8 +239,10 @@ export default function NewRecipe() {
                     </div>
                     ))}
                   </fieldset>
-                {actionData?.suggestion && <div className="text-sm mt-2 mb-2 italic">AI Suggestion: {actionData?.suggestion}</div>}
-                <button type="button" onClick={() => handleAddIngredient()} className="btn btn-outline btn-primary">
+                  {actionData?.suggestion &&
+                    <SuggestionAlert suggestion={actionData.suggestion} showSuggestion={showSuggestion} onDismissClick={() => setShowSuggestion(false)} />
+                  }
+                <button type="button" onClick={handleAddIngredient} className="btn btn-outline btn-primary">
                   Add ingredient
                 </button>
               </div>
@@ -233,16 +251,16 @@ export default function NewRecipe() {
                   <legend className="legend">Steps: </legend>
                   
                   {steps.map((step, index) => (
-                    <div className="my-4 gap-1 flex relative" key={`step-${step}`}>
+                    <div className="my-4 gap-1 flex relative group" key={`step-${step}`}>
                     <textarea
                       name={`step-${step}`}
-                      rows={8}
+                      rows={4}
                       ref={(elem) => (stepRefs.current[index] = elem)}
-                      className="input input-bordered w-full"
+                      className="textarea textarea-bordered w-full"
                     />
                     <button
                     type="button"
-                    className="p-1 border-none rounded-full self-start"
+                    className="p-1 border-none rounded-full self-start opacity-0 group-hover:opacity-100 focus:opacity-100 active:opacity-100 transition-all"
                     disabled={steps.length < 2}
                     onClick={() => handleRemoveStep(step)}
                   >

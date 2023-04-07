@@ -36,7 +36,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body style={{display: "grid", gridTemplateColumns: "16rem 1fr", minHeight: '100vh'}}>
+      <body style={{display: "grid", gridTemplateColumns: "16rem 1fr", gridTemplateRows: "1fr auto", minHeight: '100vh'}}>
         <Outlet />
         <ScrollRestoration />
         <Scripts />
